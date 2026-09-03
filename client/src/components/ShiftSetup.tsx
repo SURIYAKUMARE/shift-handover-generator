@@ -54,6 +54,16 @@ export const ShiftSetup: React.FC<ShiftSetupProps> = ({
     }
   };
 
+  const setShiftInterval = (startHours: string, endHours: string) => {
+    const baseDate = shiftWindow.start.slice(0, 10);
+    const tzOffset = shiftWindow.start.slice(19) || '+05:30';
+    setShiftWindow({
+      ...shiftWindow,
+      start: `${baseDate}T${startHours}:00${tzOffset}`,
+      end: `${baseDate}T${endHours}:00${tzOffset}`,
+    });
+  };
+
   return (
     <div className="bg-[#161B22] border border-[#30363D] rounded-md p-4 mb-6 shadow-sm">
       {/* Title */}
@@ -64,8 +74,31 @@ export const ShiftSetup: React.FC<ShiftSetupProps> = ({
             Shift Boundary Configuration
           </h2>
         </div>
-        <div className="text-[11px] text-[#8B949E] font-sans">
-          Events filtered strictly to <code className="text-[#C9D1D9] font-mono text-[11px] bg-[#0D1117] px-1 py-0.5 rounded border border-[#30363D]">[start, end)</code>
+        
+        {/* Quick Shift Presets */}
+        <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-sans">
+          <span className="text-[#6E7681]">Presets:</span>
+          <button
+            type="button"
+            onClick={() => setShiftInterval('00:00', '08:00')}
+            className="px-2 py-0.5 rounded bg-[#0D1117] border border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC] hover:border-[#6E7681] transition-colors"
+          >
+            Night (00:00-08:00)
+          </button>
+          <button
+            type="button"
+            onClick={() => setShiftInterval('08:00', '16:00')}
+            className="px-2 py-0.5 rounded bg-[#0D1117] border border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC] hover:border-[#6E7681] transition-colors"
+          >
+            Morning (08:00-16:00)
+          </button>
+          <button
+            type="button"
+            onClick={() => setShiftInterval('16:00', '00:00')}
+            className="px-2 py-0.5 rounded bg-[#0D1117] border border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC] hover:border-[#6E7681] transition-colors"
+          >
+            Evening (16:00-00:00)
+          </button>
         </div>
       </div>
 

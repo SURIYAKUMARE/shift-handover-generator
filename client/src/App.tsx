@@ -7,6 +7,7 @@ import { NoteReviewScreen } from './components/NoteReviewScreen';
 import { SourceDrillDownDrawer } from './components/SourceDrillDownDrawer';
 import { ExportBar } from './components/ExportBar';
 import { AuditBanner } from './components/AuditBanner';
+import { SignOffModal } from './components/SignOffModal';
 import {
   ShiftWindow,
   PresetScenario,
@@ -57,7 +58,16 @@ export const App: React.FC = () => {
   // Drilldown Drawer State
   const [selectedItem, setSelectedItem] = useState<GeneratedNoteItem | null>(null);
 
-  const operator = 'Lead On-Call SRE';
+  // Two-party Sign-off state
+  const [isSignOffModalOpen, setIsSignOffModalOpen] = useState(false);
+  const [signedOffData, setSignedOffData] = useState<{
+    incomingEngineer: string;
+    outgoingEngineer: string;
+    timestamp: string;
+    notes: string;
+  } | undefined>(undefined);
+
+  const outgoingOperator = 'Suriya K. (Lead SRE)';
 
   // Toggle dark/light classes on document
   useEffect(() => {
@@ -107,7 +117,7 @@ export const App: React.FC = () => {
       setIsGenerating(true);
       setErrorMsg(null);
 
-      // Track previous hash for visual reproducibility match
+      // Save previous hash for visual reproducibility match
       if (generationResult?.reproducibility_hash) {
         setPreviousHash(generationResult.reproducibility_hash);
       }
@@ -185,7 +195,7 @@ export const App: React.FC = () => {
       shiftWindow: generationResult.shift_window,
       items: generationResult.items,
       reproducibilityHash: generationResult.reproducibility_hash,
-      operator,
+      operator: outgoingOperator,
     });
   };
 
@@ -195,7 +205,16 @@ export const App: React.FC = () => {
       shiftWindow: generationResult.shift_window,
       items: generationResult.items,
       reproducibilityHash: generationResult.reproducibility_hash,
-      operator,
+      operator: outgoingOperator,
+    });
+  };
+
+  const handleConfirmSignOff = (incomingEngineer: string, notes: string) => {
+    setSignedOffData({
+      incomingEngineer,
+      outgoingEngineer: outgoingOperator,
+      timestamp: new Date().toLocaleTimeString(),
+      notes,
     });
   };
 
@@ -267,6 +286,9 @@ export const App: React.FC = () => {
             shiftWindow={generationResult.shift_window}
             onSelectSource={(item) => setSelectedItem(item)}
             reproducibilityHash={generationResult.reproducibility_hash}
+            onOpenSignOff={() => setIsSignOffModalOpen(true)}
+            isSignedOff={!!signedOffData}
+            signedOffBy={signedOffData?.incomingEngineer}
           />
         )}
       </main>
@@ -276,6 +298,21 @@ export const App: React.FC = () => {
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
       />
+
+      {/* Two-Party Handover Sign-off Modal */}
+      {generationResult && (
+        <SignOffModal
+          isOpen={isSignOffModalOpen}
+          onClose={() => setIsSignOffModalOpen(false)}
+          shiftWindow={generationResult.shift_window}
+          blockersCount={generationResult.items.filter((i) => i.section === 'Blockers').length}
+          totalItemsCount={generationResult.items.length}
+          reproducibilityHash={generationResult.reproducibility_hash}
+          onConfirmSignOff={handleConfirmSignOff}
+          isSignedOff={!!signedOffData}
+          signedOffData={signedOffData}
+        />
+      )}
 
       {/* Sticky Handoff Bar */}
       {generationResult && (
