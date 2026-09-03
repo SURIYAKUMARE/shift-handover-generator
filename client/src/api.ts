@@ -1,4 +1,4 @@
-import { GenerationResult, PresetScenario, SourceHealth, ShiftWindow, GeneratedNoteItem, Event } from './types';
+import { GenerationResult, PresetScenario, SourceHealth, ShiftWindow, GeneratedNoteItem, Event, CarriedForwardRecord } from './types';
 
 const API_BASE = '/api';
 
@@ -14,6 +14,19 @@ export async function fetchSourcesStatus(): Promise<Record<string, SourceHealth>
   if (!res.ok) throw new Error('Failed to fetch sources status');
   const data = await res.json();
   return data.sources;
+}
+
+export async function fetchCarriedOverItems(shiftStart?: string): Promise<{
+  shift_start: string;
+  count: number;
+  items: CarriedForwardRecord[];
+}> {
+  const url = shiftStart
+    ? `${API_BASE}/shift/carried-over?shift_start=${encodeURIComponent(shiftStart)}`
+    : `${API_BASE}/shift/carried-over`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch carried-over items');
+  return res.json();
 }
 
 export async function generateHandover(payload: {

@@ -270,11 +270,41 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                     sectionItems.map((item, idx) => (
                       <div
                         key={idx}
-                        className="bg-[#0D1117] border border-[#30363D] rounded p-3 hover:border-[#8B949E]/40 transition-colors"
+                        className={`bg-[#0D1117] border rounded p-3 transition-colors ${
+                          item.carried_forward && (item.shifts_open || 1) >= 3
+                            ? 'border-[#D29922] bg-[#D29922]/5 shadow-sm'
+                            : item.carried_forward
+                            ? 'border-[#30363D] border-l-2 border-l-[#58A6FF]/60 hover:border-[#8B949E]/40'
+                            : 'border-[#30363D] hover:border-[#8B949E]/40'
+                        }`}
                       >
-                        <p className="text-xs sm:text-[13px] text-[#F0F6FC] font-normal leading-relaxed">
-                          {item.item}
-                        </p>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-xs sm:text-[13px] text-[#F0F6FC] font-normal leading-relaxed flex-1">
+                            {item.item}
+                          </p>
+
+                          {/* Carry-Forward Tags */}
+                          {item.carried_forward && (
+                            <div className="shrink-0">
+                              {(item.shifts_open || 1) >= 3 ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#D29922]/20 border border-[#D29922] text-[#D29922]">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#D29922] animate-pulse" />
+                                  STALE ({item.shifts_open} SHIFTS OPEN)
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono text-[#8B949E] bg-[#161B22] border border-[#30363D]">
+                                  carried over · {item.shifts_open || 1} shifts
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {item.source_unavailable && (
+                          <div className="mt-1 text-[11px] font-mono text-[#D29922] bg-[#D29922]/10 px-2 py-0.5 rounded border border-[#D29922]/30">
+                            Warning: Source record no longer available in upstream system
+                          </div>
+                        )}
 
                         <div className="mt-2.5 pt-2 border-t border-[#21262D] flex flex-wrap items-center justify-between gap-2">
                           <div className="flex flex-wrap items-center gap-2.5">
@@ -338,10 +368,24 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                 filteredItems.map((item, idx) => (
                   <tr key={idx} className="hover:bg-[#1C2128] transition-colors">
                     <td className="py-2.5 px-3 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#F0F6FC]">
-                        <span className={`w-1.5 h-1.5 rounded-full ${SECTION_CATEGORIES[item.section].dotColor}`} />
-                        <span>{item.section}</span>
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#F0F6FC]">
+                          <span className={`w-1.5 h-1.5 rounded-full ${SECTION_CATEGORIES[item.section].dotColor}`} />
+                          <span>{item.section}</span>
+                        </span>
+                        {item.carried_forward && (
+                          <span
+                            className={`text-[9px] font-mono px-1 py-0.2 rounded border ${
+                              (item.shifts_open || 1) >= 3
+                                ? 'bg-[#D29922]/20 border-[#D29922] text-[#D29922] font-semibold'
+                                : 'bg-[#161B22] border-[#30363D] text-[#8B949E]'
+                            }`}
+                            title={`Carried over across ${item.shifts_open || 1} consecutive shifts`}
+                          >
+                            {(item.shifts_open || 1) >= 3 ? `${item.shifts_open}s STALE` : `${item.shifts_open}s`}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-2.5 px-3 font-mono text-[11px] text-[#58A6FF] whitespace-nowrap">
                       {item.source}

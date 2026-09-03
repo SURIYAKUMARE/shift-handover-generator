@@ -19,10 +19,12 @@ import {
   GeneratedNoteItem,
   GenerationStageLog,
   Event as TelemetryEvent,
+  CarriedForwardRecord,
 } from './types';
 import {
   fetchPresets,
   fetchSourcesStatus,
+  fetchCarriedOverItems,
   generateHandover,
   downloadPDFExport,
   downloadDOCXExport,
@@ -81,6 +83,8 @@ export const App: React.FC = () => {
   // Custom Event Modal & Command Palette Modal
   const [isCustomEventOpen, setIsCustomEventOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  // Pre-generation carried-over items state
+  const [carriedOverPreview, setCarriedOverPreview] = useState<CarriedForwardRecord[]>([]);
 
   const outgoingOperator = 'Suriya K. (Lead SRE)';
 
@@ -116,6 +120,19 @@ export const App: React.FC = () => {
     }
     init();
   }, []);
+
+  // Fetch carried-over preview whenever shiftWindow.start changes
+  useEffect(() => {
+    async function loadCarriedOver() {
+      try {
+        const res = await fetchCarriedOverItems(shiftWindow.start);
+        setCarriedOverPreview(res.items);
+      } catch (err) {
+        console.warn('Could not load carried over preview:', err);
+      }
+    }
+    loadCarriedOver();
+  }, [shiftWindow.start]);
 
   const handleRefreshHealth = async () => {
     try {
@@ -335,6 +352,7 @@ export const App: React.FC = () => {
           simulateUnreachable={simulateUnreachable}
           setSimulateUnreachable={setSimulateUnreachable}
           onRefreshHealth={handleRefreshHealth}
+          carriedOverItems={carriedOverPreview}
         />
 
         {/* Visual Hourly Activity Histogram */}

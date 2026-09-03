@@ -80,6 +80,26 @@ export const SourceDrillDownDrawer: React.FC<SourceDrillDownDrawerProps> = ({
           </button>
         </div>
 
+        {/* Carry-Forward Origin Notice */}
+        {item.carried_forward && (
+          <div className="px-5 py-2.5 bg-[#0D1117] border-b border-[#30363D] flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${(item.shifts_open || 1) >= 3 ? 'bg-[#D29922]' : 'bg-[#58A6FF]'}`} />
+              <span className="text-[#F0F6FC] font-medium font-sans">
+                Carried forward across {item.shifts_open || 1} consecutive shifts
+              </span>
+              <span className="text-[11px] text-[#8B949E] font-sans hidden sm:inline">
+                (untouched in current window, original timestamp preserved)
+              </span>
+            </div>
+            {(item.shifts_open || 1) >= 3 && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#D29922]/15 text-[#D29922] border border-[#D29922]/30 font-semibold">
+                STALE ESCALATION
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Progression Timeline */}

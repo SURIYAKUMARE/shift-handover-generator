@@ -20,6 +20,21 @@ export interface GeneratedNoteItem {
   raw_events?: Event[];
   progression?: string[];
   final_status?: string;
+  carried_forward?: boolean;
+  shifts_open?: number;
+  source_unavailable?: boolean;
+}
+
+export interface CarriedForwardRecord {
+  source: string;
+  record_id: string;
+  section: SectionType;
+  item: string;
+  timestamp: string;
+  shifts_open: number;
+  raw_events: Event[];
+  shift_end: string;
+  source_unavailable?: boolean;
 }
 
 export interface ShiftWindow {
@@ -55,14 +70,16 @@ export interface GenerationResult {
     total_raw_events: number;
     events_in_window: number;
     deduplicated_items: number;
+    carried_forward_items?: number;
+    stale_items?: number;
     sections_count: Record<SectionType, number>;
     quiet_sections: SectionType[];
     is_quiet_shift: boolean;
   };
-  stage_logs: GenerationStageLog[];
+  sources_status: Record<string, SourceHealth>;
   warnings: string[];
   flagged_events: Array<{ event: any; reason: string }>;
-  sources_status: Record<string, SourceHealth>;
+  stage_logs: GenerationStageLog[];
   generated_at: string;
 }
 

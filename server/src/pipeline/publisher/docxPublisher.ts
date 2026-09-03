@@ -225,6 +225,17 @@ export async function generateDOCXBuffer(options: DOCXPublisherOptions): Promise
                 size: 16,
                 color: '64748B',
               }),
+              ...(item.carried_forward
+                ? [
+                    new TextRun({
+                      text: `   | [HELD OVER: ${item.shifts_open || 1} SHIFTS${(item.shifts_open || 1) >= 3 ? ' - STALE ESCALATION' : ''}]`,
+                      bold: true,
+                      font: 'Arial',
+                      size: 16,
+                      color: (item.shifts_open || 1) >= 3 ? 'B91C1C' : 'B45309',
+                    }),
+                  ]
+                : []),
               ...(item.progression && item.progression.length > 1
                 ? [
                     new TextRun({

@@ -37,6 +37,8 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'shift-handover-generator', uptime: process.uptime() });
 });
 
+import { getCarriedOverItems } from './pipeline/carryForward/carryForwardStore.js';
+
 // Presets metadata
 app.get('/api/shift/presets', (req: Request, res: Response) => {
   const presets = Object.entries(SEED_SCENARIOS).map(([key, data]) => ({
@@ -47,6 +49,17 @@ app.get('/api/shift/presets', (req: Request, res: Response) => {
     simulatedUnreachable: data.simulateUnreachableSource,
   }));
   res.json({ presets });
+});
+
+// Pre-generation Carry-Over Preview
+app.get('/api/shift/carried-over', (req: Request, res: Response) => {
+  const shiftStart = (req.query.shift_start as string) || new Date().toISOString();
+  const items = getCarriedOverItems(shiftStart);
+  res.json({
+    shift_start: shiftStart,
+    count: items.length,
+    items,
+  });
 });
 
 // Live Sources Health

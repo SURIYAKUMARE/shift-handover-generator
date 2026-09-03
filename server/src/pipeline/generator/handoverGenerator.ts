@@ -7,8 +7,13 @@ import {
   SectionType,
   GenerationStageLog,
   SourceHealth,
+  CarriedForwardRecord,
 } from '../../types/index.js';
 import { deduplicateAndCollapse } from './deduplicator.js';
+import {
+  getCarriedOverItems,
+  persistShiftUnresolved,
+} from '../carryForward/carryForwardStore.js';
 
 const SECTION_PRIORITY: Record<SectionType, number> = {
   'Blockers': 1,
@@ -18,6 +23,7 @@ const SECTION_PRIORITY: Record<SectionType, number> = {
 };
 
 const ALL_SECTIONS: SectionType[] = ['Blockers', 'In Progress', 'Completed', 'Watch-list'];
+const STALE_THRESHOLD = 3; // Escalation threshold for untouched items
 
 export function generateHandoverNote(
   inWindowEvents: Event[],
@@ -26,11 +32,12 @@ export function generateHandoverNote(
   sourcesHealth: Record<string, SourceHealth>,
   warnings: string[],
   flaggedEvents: Array<{ event: any; reason: string }>,
-  existingLogs: GenerationStageLog[]
+  existingLogs: GenerationStageLog[],
+  customCarriedOver?: CarriedForwardRecord[]
 ): GenerationResult {
   const stageLogs = [...existingLogs];
 
-  // Stage: Deduplication
+  // Stage: Deduplication & Collapse
   const dedupStageId = 'dedup-collapse';
   stageLogs.push({
     id: dedupStageId,
@@ -51,13 +58,79 @@ export function generateHandoverNote(
     details: dedupStats,
   });
 
+  // Stage: Carry-Forward Unresolved Items Integration
+  const carryStageId = 'carry-forward-merge';
+  stageLogs.push({
+    id: carryStageId,
+    stage: 'Carry-Forward Evaluation',
+    status: 'running',
+    message: 'Loading unresolved blockers and in-progress items from prior shifts…',
+    timestamp: new Date().toISOString(),
+  });
+
+  // Load prior unresolved records
+  const carriedOverSet = customCarriedOver !== undefined
+    ? customCarriedOver
+    : getCarriedOverItems(shiftWindow.start);
+
+  let carriedCount = 0;
+  let staleCount = 0;
+
+  // Track sources present in this window
+  const inWindowSourceMap = new Map<string, GeneratedNoteItem>();
+  for (const item of items) {
+    inWindowSourceMap.set(item.source, item);
+  }
+
+  for (const record of carriedOverSet) {
+    const existingInWindow = inWindowSourceMap.get(record.source);
+
+    if (existingInWindow) {
+      // Fresh in-window event exists: fresh event wins!
+      // Reset shifts_open to 1 because it received active in-window attention
+      existingInWindow.shifts_open = 1;
+      existingInWindow.carried_forward = false;
+    } else {
+      // Untouched in this window: carry forward explicitly with original timestamp
+      const nextShiftsOpen = (record.shifts_open || 1) + 1;
+      if (nextShiftsOpen >= STALE_THRESHOLD) {
+        staleCount++;
+      }
+      carriedCount++;
+
+      const carriedItem: GeneratedNoteItem = {
+        section: record.section,
+        item: record.item,
+        source: record.source,
+        timestamp: record.timestamp, // PRESERVE ORIGINAL TIMESTAMP (never fabricate)
+        raw_events: record.raw_events,
+        progression: [`carried_over:${record.shifts_open}_shifts`],
+        final_status: record.section === 'Blockers' ? 'blocked' : 'in_progress',
+        carried_forward: true,
+        shifts_open: nextShiftsOpen,
+        source_unavailable: record.source_unavailable,
+      };
+
+      items.push(carriedItem);
+    }
+  }
+
+  stageLogs.push({
+    id: `${carryStageId}-done`,
+    stage: 'Carry-Forward Evaluation',
+    status: 'completed',
+    message: `Evaluated carry-forward set: ${carriedCount} unresolved item(s) carried forward untouched (${staleCount} stale/escalated >= ${STALE_THRESHOLD} shifts)`,
+    timestamp: new Date().toISOString(),
+    details: { carriedCount, staleCount },
+  });
+
   // Stage: Section Assignment & Deterministic Sorting
   const sortStageId = 'section-sort';
   stageLogs.push({
     id: sortStageId,
     stage: 'Section Assignment & Verification',
     status: 'running',
-    message: 'Assigning items via deterministic grounding rules…',
+    message: 'Assigning items via deterministic grounding rules and sorting…',
     timestamp: new Date().toISOString(),
   });
 
@@ -92,27 +165,33 @@ export function generateHandoverNote(
   const isQuietShift = items.length === 0;
 
   // Compute Reproducibility SHA-256 Hash
-  // Canonical representation: strips runtime transient metadata to ensure idempotency
+  // Canonical representation: includes section, source, item, timestamp, carried_forward, shifts_open
   const canonicalRepresentation = items.map((i) => ({
     section: i.section,
     source: i.source,
     item: i.item,
     timestamp: i.timestamp,
     final_status: i.final_status,
+    carried_forward: !!i.carried_forward,
+    shifts_open: i.shifts_open || 1,
   }));
 
+  const canonicalPayload = JSON.stringify(canonicalRepresentation);
   const reproducibilityHash = crypto
     .createHash('sha256')
-    .update(JSON.stringify({ window: shiftWindow, items: canonicalRepresentation }))
+    .update(canonicalPayload, 'utf8')
     .digest('hex');
 
+  // Persist unresolved items for subsequent shift (Shift N+1)
+  persistShiftUnresolved(shiftWindow, items);
+
   stageLogs.push({
-    id: `${sortStageId}-done`,
-    stage: 'Section Assignment & Verification',
+    id: 'hashing-done',
+    stage: 'Reproducibility Signing',
     status: 'completed',
-    message: `Generated note with ${items.length} items. Reproducibility fingerprint: ${reproducibilityHash.substring(0, 16)}…`,
+    message: `Generated canonical SHA-256 fingerprint: ${reproducibilityHash.substring(0, 16)}…`,
     timestamp: new Date().toISOString(),
-    details: { reproducibilityHash, sectionsCount },
+    details: { reproducibility_hash: reproducibilityHash },
   });
 
   return {
@@ -123,14 +202,16 @@ export function generateHandoverNote(
       total_raw_events: totalRawEvents,
       events_in_window: inWindowEvents.length,
       deduplicated_items: items.length,
+      carried_forward_items: carriedCount,
+      stale_items: staleCount,
       sections_count: sectionsCount,
       quiet_sections: quietSections,
       is_quiet_shift: isQuietShift,
     },
-    stage_logs: stageLogs,
+    sources_status: sourcesHealth,
     warnings,
     flagged_events: flaggedEvents,
-    sources_status: sourcesHealth,
+    stage_logs: stageLogs,
     generated_at: new Date().toISOString(),
   };
 }

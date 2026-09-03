@@ -1,6 +1,6 @@
 import React from 'react';
-import { ShiftWindow, SourceHealth } from '../types';
-import { Calendar, Globe, Database, Radio, MessageSquare, RefreshCw, Cpu } from 'lucide-react';
+import { ShiftWindow, SourceHealth, CarriedForwardRecord } from '../types';
+import { Calendar, Globe, Database, Radio, MessageSquare, RefreshCw, Cpu, ArrowRightLeft } from 'lucide-react';
 
 interface ShiftSetupProps {
   shiftWindow: ShiftWindow;
@@ -11,6 +11,7 @@ interface ShiftSetupProps {
   simulateUnreachable: string;
   setSimulateUnreachable: (source: string) => void;
   onRefreshHealth: () => void;
+  carriedOverItems?: CarriedForwardRecord[];
 }
 
 const TIMEZONES = [
@@ -31,6 +32,7 @@ export const ShiftSetup: React.FC<ShiftSetupProps> = ({
   simulateUnreachable,
   setSimulateUnreachable,
   onRefreshHealth,
+  carriedOverItems = [],
 }) => {
   const toggleSource = (sourceId: string) => {
     if (enabledSources.includes(sourceId)) {
@@ -219,6 +221,24 @@ export const ShiftSetup: React.FC<ShiftSetupProps> = ({
             );
           })}
         </div>
+
+        {/* Pre-Generation Carry-Forward Preview */}
+        {carriedOverItems && carriedOverItems.length > 0 && (
+          <div className="mt-3 p-2.5 rounded bg-[#0D1117] border border-[#58A6FF]/30 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <ArrowRightLeft className="w-3.5 h-3.5 text-[#58A6FF] shrink-0" />
+              <span className="text-[#F0F6FC] font-medium font-sans">
+                {carriedOverItems.length} unresolved item{carriedOverItems.length > 1 ? 's' : ''} held over from prior shift
+              </span>
+              <span className="text-[11px] text-[#8B949E] font-sans">
+                ({carriedOverItems.filter((i) => i.section === 'Blockers').length} blockers, {carriedOverItems.filter((i) => i.section === 'In Progress').length} in progress)
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-[#58A6FF] bg-[#161B22] px-2 py-0.5 rounded border border-[#30363D]">
+              Preserved in new note if untouched
+            </span>
+          </div>
+        )}
 
         {/* Operational Fault Injection */}
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">

@@ -155,7 +155,12 @@ export function generatePDFBuffer(options: PDFPublisherOptions): Promise<Buffer>
             doc.fillColor('#64748B').fontSize(7.5).font('Helvetica')
               .text(`Event Time: ${item.timestamp}`, 205, metaY);
 
-            if (item.progression && item.progression.length > 1) {
+            if (item.carried_forward) {
+              const isStale = (item.shifts_open || 1) >= 3;
+              const carryText = isStale ? `STALE (${item.shifts_open} SHIFTS OPEN)` : `Held over (${item.shifts_open} shifts)`;
+              doc.fillColor(isStale ? '#B91C1C' : '#B45309').fontSize(7.5).font('Helvetica-Bold')
+                .text(carryText, 360, metaY, { width: 185, align: 'right' });
+            } else if (item.progression && item.progression.length > 1) {
               doc.fillColor('#0284C7').fontSize(7.5).font('Helvetica-Oblique')
                 .text(`History: ${item.progression.join(' → ')}`, 360, metaY, { width: 185, align: 'right' });
             }

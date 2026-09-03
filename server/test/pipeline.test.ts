@@ -291,4 +291,127 @@ describe('Shift Handover Pipeline', () => {
       expect(docx.length).toBeGreaterThan(1000);
     });
   });
+
+  describe('Carry-Forward Unresolved Items Across Shifts', () => {
+    it('carries forward an untouched blocker with incremented shifts_open and original timestamp', () => {
+      const priorBlocker = {
+        source: 'ticketing:OPS-4821',
+        record_id: 'OPS-4821',
+        section: 'Blockers' as const,
+        item: 'OPS-4821 — login failures on mobile app; root cause not found',
+        timestamp: '2026-09-03T14:20:00Z', // Original historical timestamp
+        shifts_open: 1,
+        shift_end: '2026-09-03T16:00:00Z',
+        raw_events: [],
+      };
+
+      // Current shift has NO events for OPS-4821
+      const note = generateHandoverNote(
+        [], // empty in-window
+        testWindow,
+        0,
+        {},
+        [],
+        [],
+        [],
+        [priorBlocker]
+      );
+
+      expect(note.items.length).toBe(1);
+      const carried = note.items[0];
+      expect(carried.source).toBe('ticketing:OPS-4821');
+      expect(carried.carried_forward).toBe(true);
+      expect(carried.shifts_open).toBe(2); // incremented from 1 to 2
+      expect(carried.timestamp).toBe('2026-09-03T14:20:00Z'); // PRESERVES ORIGINAL TIMESTAMP
+      expect(carried.section).toBe('Blockers');
+      expect(note.stats.carried_forward_items).toBe(1);
+    });
+
+    it('merges fresh in-window update when ticket is actively modified, resetting shifts_open to 1', () => {
+      const priorItem = {
+        source: 'ticketing:OPS-4821',
+        record_id: 'OPS-4821',
+        section: 'Blockers' as const,
+        item: 'OPS-4821 — login failures on mobile app; old description',
+        timestamp: '2026-09-03T14:20:00Z',
+        shifts_open: 2,
+        shift_end: '2026-09-03T16:00:00Z',
+        raw_events: [],
+      };
+
+      // Fresh in-window event arrives for OPS-4821
+      const freshEvent: Event = {
+        source: 'ticketing',
+        record_id: 'OPS-4821',
+        timestamp: '2026-09-03T18:00:00Z',
+        summary: 'Hotfix patch deployed to auth cluster; monitoring latency',
+        status: 'in_progress',
+      };
+
+      const note = generateHandoverNote(
+        [freshEvent],
+        testWindow,
+        1,
+        {},
+        [],
+        [],
+        [],
+        [priorItem]
+      );
+
+      // Exactly ONE merged line (no duplicate)
+      expect(note.items.length).toBe(1);
+      const item = note.items[0];
+      expect(item.source).toBe('ticketing:OPS-4821');
+      expect(item.carried_forward).toBe(false); // Fresh event wins
+      expect(item.shifts_open).toBe(1); // Reset to 1 because actively touched
+      expect(item.item).toContain('Hotfix patch deployed'); // Fresh summary wins
+      expect(note.stats.carried_forward_items).toBe(0);
+    });
+
+    it('escalates visual treatment and counts stale items when shifts_open >= 3', () => {
+      const staleItem = {
+        source: 'ticketing:OPS-3109',
+        record_id: 'OPS-3109',
+        section: 'Blockers' as const,
+        item: 'OPS-3109 — Legacy VPN gateway memory leak; vendor patch pending',
+        timestamp: '2026-09-02T22:00:00Z',
+        shifts_open: 2, // Was 2 in prior shift, now becomes 3
+        shift_end: '2026-09-03T16:00:00Z',
+        raw_events: [],
+      };
+
+      const note = generateHandoverNote([], testWindow, 0, {}, [], [], [], [staleItem]);
+
+      expect(note.items.length).toBe(1);
+      expect(note.items[0].shifts_open).toBe(3);
+      expect(note.stats.stale_items).toBe(1);
+    });
+
+    it('reproduces identical SHA-256 fingerprint across consecutive runs with carry-forward', () => {
+      const carried = {
+        source: 'ticketing:OPS-4821',
+        record_id: 'OPS-4821',
+        section: 'Blockers' as const,
+        item: 'OPS-4821 — login failures on mobile app',
+        timestamp: '2026-09-03T14:20:00Z',
+        shifts_open: 2,
+        shift_end: '2026-09-03T16:00:00Z',
+        raw_events: [],
+      };
+
+      const run1 = generateHandoverNote([], testWindow, 0, {}, [], [], [], [carried]);
+      const run2 = generateHandoverNote([], testWindow, 0, {}, [], [], [], [carried]);
+
+      expect(run1.reproducibility_hash).toBe(run2.reproducibility_hash);
+      expect(run1.items[0].shifts_open).toBe(run2.items[0].shifts_open);
+    });
+
+    it('gracefully handles empty prior shift with 0 carried items on fresh deployment', () => {
+      const note = generateHandoverNote([], testWindow, 0, {}, [], [], [], []);
+      expect(note.items.length).toBe(0);
+      expect(note.stats.carried_forward_items).toBe(0);
+      expect(note.stats.is_quiet_shift).toBe(true);
+    });
+  });
 });
