@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#090D16] text-[#F1F5F9] antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom scrollbars for NOC density */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0B111E;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1E2D4A;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2D426E;
+  }
+}
+
+/* Light mode overrides */
+.light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+.light .bg-noc-bg {
+  background-color: #F8FAFC !important;
+}
+
+.light .bg-noc-panel {
+  background-color: #FFFFFF !important;
+}
+
+.light .bg-noc-panelHover {
+  background-color: #F1F5F9 !important;
+}
+
+.light .bg-noc-card {
+  background-color: #FFFFFF !important;
+}
+
+.light .border-noc-border {
+  border-color: #E2E8F0 !important;
+}
+
+.light .border-noc-borderLight {
+  border-color: #CBD5E1 !important;
+}
+
+.light .text-noc-text {
+  color: #0F172A !important;
+}
+
+.light .text-noc-muted {
+  color: #64748B !important;
+}
