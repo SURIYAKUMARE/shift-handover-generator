@@ -8,6 +8,8 @@ import { NoteReviewScreen } from './components/NoteReviewScreen';
 import { SourceDrillDownDrawer } from './components/SourceDrillDownDrawer';
 import { ExportBar } from './components/ExportBar';
 import { AuditBanner } from './components/AuditBanner';
+import { RelayTransferStrip } from './components/RelayTransferStrip';
+import { playChimeSuccess, playTactileBlip } from './utils/audio';
 import { SignOffModal } from './components/SignOffModal';
 import { CustomEventModal } from './components/CustomEventModal';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
@@ -151,6 +153,7 @@ export const App: React.FC = () => {
       unreachableOverride?: string,
       extraEvents?: TelemetryEvent[]
     ) => {
+      playTactileBlip();
       setIsGenerating(true);
       setErrorMsg(null);
 
@@ -187,6 +190,7 @@ export const App: React.FC = () => {
         setGenerationResult(result);
         setStageLogs(result.stage_logs);
         setSourcesHealth(result.sources_status);
+        playChimeSuccess();
       } catch (err: any) {
         setErrorMsg(err.message || 'Failed to compile shift handover note');
         setStageLogs((prev) => [
@@ -267,6 +271,7 @@ export const App: React.FC = () => {
   };
 
   const handleConfirmSignOff = (incomingEngineer: string, notes: string) => {
+    playChimeSuccess();
     setSignedOffData({
       incomingEngineer,
       outgoingEngineer: outgoingOperator,
@@ -334,6 +339,18 @@ export const App: React.FC = () => {
 
       {/* Main Ledger Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 pb-24">
+        {/* Shift Relay Baton Hero Strip */}
+        <RelayTransferStrip
+          shiftWindow={shiftWindow}
+          outgoingLead={outgoingOperator}
+          incomingLead={signedOffData?.incomingEngineer}
+          isSignedOff={!!signedOffData}
+          onOpenSignOff={() => setIsSignOffModalOpen(true)}
+          itemsCount={generationResult?.items.length || 0}
+          blockersCount={generationResult?.items.filter((i) => i.section === 'Blockers').length || 0}
+          reproducibilityHash={generationResult?.reproducibility_hash}
+        />
+
         {/* Test Scenarios Presets */}
         <ScenarioBar
           presets={presets}
