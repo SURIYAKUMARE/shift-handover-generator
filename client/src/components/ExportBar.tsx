@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, FileText, RefreshCw, CheckCircle2, Copy, ShieldCheck } from 'lucide-react';
+import { Download, FileText, RefreshCw, Check, Copy, ShieldCheck, Hash } from 'lucide-react';
 
 interface ExportBarProps {
   onExportPDF: () => Promise<void>;
@@ -53,76 +53,77 @@ export const ExportBar: React.FC<ExportBarProps> = ({
   const isMatched = previousHash && previousHash === reproducibilityHash;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-noc-panel/95 backdrop-blur-md border-t border-noc-border px-6 py-3.5 shadow-2xl transition-all">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Left: Reproducibility & Checksum */}
-        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-noc-card border border-noc-border">
-            <span className="text-noc-muted">SHA-256:</span>
-            <span className="text-blue-400 font-bold tracking-wide">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0A0A0B]/90 backdrop-blur-md border-t border-white/[0.07] px-4 sm:px-6 py-3 shadow-2xl">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        {/* Left: Reproducibility & Fingerprint */}
+        <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/[0.03] border border-white/[0.07] text-zinc-300">
+            <Hash className="w-3 h-3 text-blue-400" />
+            <span className="text-zinc-500">SHA-256:</span>
+            <span className="text-zinc-200 font-medium">
               {reproducibilityHash.substring(0, 16)}…
             </span>
             <button
               onClick={copyHash}
-              className="ml-1 p-1 hover:text-white transition-colors"
-              title="Copy full SHA-256 hash"
+              className="ml-1 p-0.5 text-zinc-400 hover:text-zinc-200 transition-colors"
+              title="Copy complete SHA-256 hash"
             >
               {copiedHash ? (
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <Check className="w-3 h-3 text-emerald-400" />
               ) : (
-                <Copy className="w-3.5 h-3.5 text-noc-muted" />
+                <Copy className="w-3 h-3" />
               )}
             </button>
           </div>
 
           {/* Verification Badge */}
           {isMatched ? (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-medium">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/[0.08] border border-emerald-500/20 text-emerald-400 text-[11px] font-medium font-mono">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>100% REPRODUCIBLE MATCH</span>
+              <span>100% IDEMPOTENT MATCH</span>
             </div>
           ) : (
-            <div className="text-noc-muted hidden sm:inline">
-              Items in note: <strong className="text-noc-text">{itemCount}</strong>
+            <div className="text-zinc-500 text-[11px] hidden md:inline">
+              Note items: <strong className="text-zinc-300">{itemCount}</strong>
             </div>
           )}
 
-          <div className="text-[11px] text-noc-muted hidden lg:inline">
+          <span className="text-[11px] text-zinc-500 hidden lg:inline">
             Generated: {new Date(generatedAt).toLocaleTimeString()}
-          </div>
+          </span>
         </div>
 
-        {/* Right: Export Actions */}
-        <div className="flex items-center gap-3">
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
           {/* Regenerate */}
           <button
             onClick={onRegenerate}
             disabled={isGenerating}
-            title="Regenerate the same shift window to verify identical output"
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-noc-card hover:bg-noc-panelHover border border-noc-border text-xs font-mono font-medium text-noc-text transition-colors disabled:opacity-50"
+            title="Regenerate identical window to verify reproducibility"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] text-xs font-mono text-zinc-300 hover:text-white transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
-            <span>Regenerate (Verify Idempotency)</span>
+            <RefreshCw className={`w-3 h-3 ${isGenerating ? 'animate-spin' : ''}`} />
+            <span>Regenerate</span>
           </button>
 
-          {/* Export PDF */}
+          {/* PDF */}
           <button
             onClick={handlePDF}
-            disabled={isExportingPDF || isGenerating}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold shadow-md hover:shadow-red-500/20 transition-all disabled:opacity-50"
+            disabled={isExportingPDF || isGenerating || itemCount === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-medium text-zinc-200 hover:text-white transition-all disabled:opacity-40"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>{isExportingPDF ? 'Building PDF…' : 'Export PDF'}</span>
+            <span>{isExportingPDF ? 'Building…' : 'Export PDF'}</span>
           </button>
 
-          {/* Export DOCX */}
+          {/* DOCX */}
           <button
             onClick={handleDOCX}
-            disabled={isExportingDOCX || isGenerating}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md hover:shadow-blue-500/20 transition-all disabled:opacity-50"
+            disabled={isExportingDOCX || isGenerating || itemCount === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-medium text-zinc-200 hover:text-white transition-all disabled:opacity-40"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>{isExportingDOCX ? 'Building DOCX…' : 'Export DOCX'}</span>
+            <span>{isExportingDOCX ? 'Building…' : 'Export DOCX'}</span>
           </button>
         </div>
       </div>

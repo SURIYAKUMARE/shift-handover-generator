@@ -1,71 +1,169 @@
-import React from 'react';
-import { Activity, Moon, Sun, ShieldCheck, Terminal } from 'lucide-react';
+import React, { useState } from 'react';
+import { Play, Download, FileText, RefreshCw, CheckCircle2, Copy, Sun, Moon, Sparkles, ChevronRight, Hash } from 'lucide-react';
+import { ShiftWindow } from '../types';
 
 interface HeaderProps {
+  shiftWindow: ShiftWindow;
+  isGenerating: boolean;
+  onGenerate: () => void;
+  onExportPDF: () => Promise<void>;
+  onExportDOCX: () => Promise<void>;
+  reproducibilityHash?: string;
+  previousHash?: string;
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
-  isGenerating: boolean;
-  operator: string;
+  itemCount: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  shiftWindow,
+  isGenerating,
+  onGenerate,
+  onExportPDF,
+  onExportDOCX,
+  reproducibilityHash,
+  previousHash,
   darkMode,
   setDarkMode,
-  isGenerating,
-  operator,
+  itemCount,
 }) => {
+  const [copiedHash, setCopiedHash] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [isExportingDOCX, setIsExportingDOCX] = useState(false);
+
+  const handlePDF = async () => {
+    try {
+      setIsExportingPDF(true);
+      await onExportPDF();
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
+  const handleDOCX = async () => {
+    try {
+      setIsExportingDOCX(true);
+      await onExportDOCX();
+    } finally {
+      setIsExportingDOCX(false);
+    }
+  };
+
+  const copyHash = () => {
+    if (!reproducibilityHash) return;
+    navigator.clipboard.writeText(reproducibilityHash);
+    setCopiedHash(true);
+    setTimeout(() => setCopiedHash(false), 2000);
+  };
+
+  const isMatched = previousHash && reproducibilityHash && previousHash === reproducibilityHash;
+
   return (
-    <header className="border-b border-noc-border bg-noc-panel/80 backdrop-blur sticky top-0 z-40 px-6 py-3 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Left branding */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-blue-600/10 border border-blue-500/30 text-blue-400">
-            <Activity className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+    <header className="sticky top-0 z-40 bg-[#0A0A0B]/85 backdrop-blur-md border-b border-brand-border px-4 sm:px-6 py-3 transition-colors">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        {/* Left: Brand + Breadcrumb-style shift window info */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <span className="font-semibold text-sm tracking-tight text-brand-text flex items-center gap-1.5 font-sans">
+              Handoff
             </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-semibold tracking-wide text-noc-text flex items-center gap-1.5 font-mono">
-                OPS // SHIFT HANDOVER
-              </h1>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-                PROD-NOC
+
+          <ChevronRight className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+
+          {/* Breadcrumb shift info */}
+          <div className="flex items-center gap-2 overflow-hidden text-xs">
+            <span className="text-brand-textMuted hidden md:inline font-mono text-[11px] uppercase tracking-wider">
+              NOC
+            </span>
+            <ChevronRight className="w-3 h-3 text-zinc-600 hidden md:inline shrink-0" />
+            <div className="flex items-center gap-2 font-mono text-[11px] text-brand-text bg-white/[0.03] border border-brand-border px-2.5 py-1 rounded-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span className="text-zinc-300 truncate max-w-[130px] sm:max-w-none">
+                {shiftWindow.start.slice(11, 16)} → {shiftWindow.end.slice(11, 16)}
               </span>
+              <span className="text-zinc-500 text-[10px]">({shiftWindow.timezone.split('/')[1] || shiftWindow.timezone})</span>
             </div>
-            <p className="text-xs text-noc-muted">
-              Source-Grounded • Deterministic Dedup • Single-File PDF/DOCX Export
-            </p>
+
+            {/* Reproducibility Checksum pill */}
+            {reproducibilityHash && (
+              <button
+                onClick={copyHash}
+                title="Click to copy SHA-256 reproducibility fingerprint"
+                className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.02] border border-brand-border hover:border-brand-borderHover text-[11px] font-mono text-zinc-400 hover:text-zinc-200 transition-colors"
+              >
+                <Hash className="w-3 h-3 text-blue-400" />
+                <span>{reproducibilityHash.substring(0, 8)}…</span>
+                {copiedHash ? (
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                ) : isMatched ? (
+                  <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-400 font-semibold">
+                    100% MATCH
+                  </span>
+                ) : (
+                  <Copy className="w-2.5 h-2.5 opacity-60" />
+                )}
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Right tools */}
-        <div className="flex items-center gap-3">
-          {/* Operator badge */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-noc-card border border-noc-border text-xs font-mono">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-            <span className="text-noc-muted">OPERATOR:</span>
-            <span className="text-noc-text font-medium">{operator}</span>
-          </div>
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Export PDF (ghost/outline) */}
+          <button
+            onClick={handlePDF}
+            disabled={isExportingPDF || isGenerating || itemCount === 0}
+            title="Export as clean, single-file PDF document"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-white/[0.05] border border-brand-border hover:border-brand-borderHover text-xs font-medium text-brand-textMuted hover:text-brand-text transition-all disabled:opacity-40"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="text-[12px]">{isExportingPDF ? 'PDF…' : 'PDF'}</span>
+          </button>
 
-          {/* Engine status */}
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-noc-card border border-noc-border text-xs font-mono">
-            <Terminal className="w-3.5 h-3.5 text-noc-muted" />
-            <span className="text-noc-muted">PIPELINE:</span>
-            <span className={isGenerating ? "text-amber-400 animate-pulse" : "text-emerald-400"}>
-              {isGenerating ? "PROCESSING" : "IDLE / READY"}
-            </span>
-          </div>
+          {/* Export DOCX (ghost/outline) */}
+          <button
+            onClick={handleDOCX}
+            disabled={isExportingDOCX || isGenerating || itemCount === 0}
+            title="Export as single-file Microsoft Word document"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-transparent hover:bg-white/[0.05] border border-brand-border hover:border-brand-borderHover text-xs font-medium text-brand-textMuted hover:text-brand-text transition-all disabled:opacity-40"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span className="text-[12px]">{isExportingDOCX ? 'DOCX…' : 'DOCX'}</span>
+          </button>
 
-          {/* Dark / Light Mode Switch */}
+          {/* Theme Switcher (ghost) */}
           <button
             onClick={() => setDarkMode(!darkMode)}
             title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            className="p-2 rounded-lg bg-noc-card hover:bg-noc-panelHover border border-noc-border text-noc-muted hover:text-noc-text transition-colors"
+            className="p-1.5 rounded-lg bg-transparent hover:bg-white/[0.05] border border-brand-border text-zinc-400 hover:text-zinc-200 transition-colors"
           >
-            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-blue-500" />}
+            {darkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-blue-500" />}
+          </button>
+
+          {/* Primary Action Button: Confident Electric Blue */}
+          <button
+            onClick={onGenerate}
+            disabled={isGenerating}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-white shadow-sm transition-all ${
+              isGenerating
+                ? 'bg-blue-600/50 cursor-wait'
+                : 'bg-blue-600 hover:bg-blue-500 hover:shadow-brand-accentGlow active:scale-[0.98]'
+            }`}
+          >
+            {isGenerating ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Play className="w-3.5 h-3.5 fill-current" />
+            )}
+            <span>{isGenerating ? 'Generating…' : 'Generate Note'}</span>
+            <span className="hidden md:inline text-[10px] opacity-70 font-mono bg-black/20 px-1 py-0.5 rounded">
+              ↵
+            </span>
           </button>
         </div>
       </div>

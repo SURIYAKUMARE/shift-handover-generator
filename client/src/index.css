@@ -4,61 +4,72 @@
 
 @layer base {
   body {
-    @apply bg-[#090D16] text-[#F1F5F9] antialiased;
+    @apply bg-[#0A0A0B] text-[#EDEDED] antialiased selection:bg-blue-600/30 selection:text-white font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Custom scrollbars for NOC density */
+  /* Minimalist modern scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0B111E;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1E2D4A;
-    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #2D426E;
+    background: rgba(255, 255, 255, 0.22);
   }
 }
 
-/* Light mode overrides */
+/* Subtle background ambient mesh glow */
+.bg-ambient-radial {
+  background-image: radial-gradient(
+    circle at 50% 0%,
+    rgba(59, 130, 246, 0.04) 0%,
+    transparent 60%
+  );
+}
+
+/* Card hover lift effect */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6), 0 4px 10px -2px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Light mode support */
 .light body {
   background-color: #F8FAFC !important;
-  color: #0F172A !important;
+  color: #090D16 !important;
 }
-
-.light .bg-noc-bg {
+.light .bg-\[\#0A0A0B\] {
   background-color: #F8FAFC !important;
 }
-
-.light .bg-noc-panel {
+.light .bg-brand-bg {
+  background-color: #F8FAFC !important;
+}
+.light .bg-brand-panel {
   background-color: #FFFFFF !important;
 }
-
-.light .bg-noc-panelHover {
-  background-color: #F1F5F9 !important;
-}
-
-.light .bg-noc-card {
+.light .bg-brand-card {
   background-color: #FFFFFF !important;
 }
-
-.light .border-noc-border {
+.light .border-brand-border {
   border-color: #E2E8F0 !important;
 }
-
-.light .border-noc-borderLight {
-  border-color: #CBD5E1 !important;
-}
-
-.light .text-noc-text {
+.light .text-brand-text {
   color: #0F172A !important;
 }
-
-.light .text-noc-muted {
+.light .text-brand-textMuted {
   color: #64748B !important;
 }

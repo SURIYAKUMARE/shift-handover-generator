@@ -1,6 +1,6 @@
 import React from 'react';
 import { GeneratedNoteItem, SectionType, ShiftWindow } from '../types';
-import { AlertCircle, Clock, CheckCircle, Eye, ChevronRight, Hash, ShieldCheck } from 'lucide-react';
+import { ChevronRight, Clock, Minus } from 'lucide-react';
 
 interface NoteReviewScreenProps {
   items: GeneratedNoteItem[];
@@ -9,68 +9,52 @@ interface NoteReviewScreenProps {
   reproducibilityHash: string;
 }
 
-const SECTION_CONFIG: Record<
-  SectionType,
-  {
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-    colorClasses: {
-      border: string;
-      badge: string;
-      headerText: string;
-      headerBg: string;
-      accentLine: string;
-    };
-  }
-> = {
+interface SectionTheme {
+  title: string;
+  dotColor: string;
+  badgeBg: string;
+  badgeBorder: string;
+  badgeText: string;
+  indicatorColor: string;
+  subtleGlow: string;
+}
+
+const SECTION_THEMES: Record<SectionType, SectionTheme> = {
   'Blockers': {
     title: 'Blockers & Escalations',
-    description: 'Active impediments, critical severity outages, and items requiring on-call paging or external team support.',
-    icon: <AlertCircle className="w-4 h-4 text-amber-400" />,
-    colorClasses: {
-      border: 'border-amber-500/30',
-      badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25',
-      headerText: 'text-amber-400',
-      headerBg: 'bg-amber-500/10',
-      accentLine: 'bg-amber-500',
-    },
+    dotColor: 'bg-amber-400',
+    badgeBg: 'bg-amber-500/[0.08]',
+    badgeBorder: 'border-amber-500/20',
+    badgeText: 'text-amber-400',
+    indicatorColor: 'bg-amber-500',
+    subtleGlow: 'from-amber-500/[0.02]',
   },
   'In Progress': {
     title: 'In Progress',
-    description: 'Active investigations, deployments in transit, or open maintenance tasks underway.',
-    icon: <Clock className="w-4 h-4 text-blue-400" />,
-    colorClasses: {
-      border: 'border-blue-500/30',
-      badge: 'bg-blue-500/15 text-blue-300 border-blue-500/30 hover:bg-blue-500/25',
-      headerText: 'text-blue-400',
-      headerBg: 'bg-blue-500/10',
-      accentLine: 'bg-blue-500',
-    },
+    dotColor: 'bg-blue-400',
+    badgeBg: 'bg-blue-500/[0.08]',
+    badgeBorder: 'border-blue-500/20',
+    badgeText: 'text-blue-400',
+    indicatorColor: 'bg-blue-500',
+    subtleGlow: 'from-blue-500/[0.02]',
   },
   'Completed': {
     title: 'Completed',
-    description: 'Incidents resolved, changes safely rolled out, and tickets closed during this shift window.',
-    icon: <CheckCircle className="w-4 h-4 text-emerald-400" />,
-    colorClasses: {
-      border: 'border-emerald-500/30',
-      badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25',
-      headerText: 'text-emerald-400',
-      headerBg: 'bg-emerald-500/10',
-      accentLine: 'bg-emerald-500',
-    },
+    dotColor: 'bg-emerald-400',
+    badgeBg: 'bg-emerald-500/[0.08]',
+    badgeBorder: 'border-emerald-500/20',
+    badgeText: 'text-emerald-400',
+    indicatorColor: 'bg-emerald-500',
+    subtleGlow: 'from-emerald-500/[0.02]',
   },
   'Watch-list': {
-    title: 'Watch-list & Observation',
-    description: 'Post-resolution soak monitoring, intermittent edge fluctuations, and components under observation.',
-    icon: <Eye className="w-4 h-4 text-purple-400" />,
-    colorClasses: {
-      border: 'border-purple-500/30',
-      badge: 'bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25',
-      headerText: 'text-purple-400',
-      headerBg: 'bg-purple-500/10',
-      accentLine: 'bg-purple-500',
-    },
+    title: 'Watch-list',
+    dotColor: 'bg-slate-400',
+    badgeBg: 'bg-slate-400/[0.08]',
+    badgeBorder: 'border-slate-400/20',
+    badgeText: 'text-slate-300',
+    indicatorColor: 'bg-slate-400',
+    subtleGlow: 'from-slate-500/[0.02]',
   },
 };
 
@@ -83,27 +67,26 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
   reproducibilityHash,
 }) => {
   return (
-    <div className="space-y-8 pb-16">
-      {/* Shift Window Header Summary Bar */}
-      <div className="bg-noc-panel border border-noc-border rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 pb-20">
+      {/* Shift Overview Bar */}
+      <div className="bg-[#121215] border border-white/[0.07] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
         <div>
-          <span className="text-xs uppercase font-mono tracking-wider text-noc-muted block">
-            CONFIRMED SHIFT INTERVAL
+          <span className="text-[11px] uppercase tracking-wider font-mono text-zinc-400 font-semibold block">
+            CONFIRMED SHIFT WINDOW
           </span>
-          <div className="text-sm font-mono text-noc-text mt-0.5 flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-blue-400">{shiftWindow.start}</span>
-            <span className="text-noc-muted">→</span>
-            <span className="font-semibold text-blue-400">{shiftWindow.end}</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-noc-card border border-noc-border text-noc-muted">
+          <div className="text-xs font-mono text-zinc-200 mt-1 flex flex-wrap items-center gap-2">
+            <span className="text-blue-400 font-semibold">{shiftWindow.start}</span>
+            <span className="text-zinc-600">→</span>
+            <span className="text-blue-400 font-semibold">{shiftWindow.end}</span>
+            <span className="text-zinc-400 text-[11px] px-1.5 py-0.5 rounded bg-white/[0.03] border border-white/[0.06]">
               {shiftWindow.timezone}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono">
-          <Hash className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-          <span className="text-noc-muted">CHECKSUM:</span>
-          <span className="text-blue-400 font-bold tracking-wider" title={reproducibilityHash}>
+        <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
+          <span>SHA-256:</span>
+          <span className="text-zinc-200 font-semibold bg-white/[0.03] border border-white/[0.06] px-2 py-0.5 rounded text-[11px]" title={reproducibilityHash}>
             {reproducibilityHash.substring(0, 16)}…
           </span>
         </div>
@@ -112,90 +95,91 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
       {/* Four Fixed Sections */}
       <div className="space-y-6">
         {SECTIONS_ORDER.map((sectionType) => {
-          const sectionConfig = SECTION_CONFIG[sectionType];
+          const theme = SECTION_THEMES[sectionType];
           const sectionItems = items.filter((item) => item.section === sectionType);
 
           return (
             <div
               key={sectionType}
-              className={`bg-noc-panel border ${sectionConfig.colorClasses.border} rounded-xl overflow-hidden shadow-sm transition-all`}
+              className={`bg-[#121215] bg-gradient-to-b ${theme.subtleGlow} to-transparent border border-white/[0.07] rounded-xl overflow-hidden shadow-sm`}
             >
               {/* Section Header */}
-              <div
-                className={`px-5 py-3.5 flex items-center justify-between border-b border-noc-border ${sectionConfig.colorClasses.headerBg}`}
-              >
+              <div className="px-5 py-3.5 border-b border-white/[0.06] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  {sectionConfig.icon}
-                  <h3 className={`text-sm font-semibold tracking-wide ${sectionConfig.colorClasses.headerText} uppercase font-mono`}>
-                    {sectionConfig.title}
-                  </h3>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-noc-card border border-noc-border text-noc-text font-medium">
+                  {/* Status chip with subtle background tint + colored dot */}
+                  <div className={`flex items-center gap-2 px-2.5 py-1 rounded-md ${theme.badgeBg} border ${theme.badgeBorder}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${theme.dotColor}`} />
+                    <span className={`text-[11px] font-mono uppercase tracking-wider font-semibold ${theme.badgeText}`}>
+                      {theme.title}
+                    </span>
+                  </div>
+
+                  <span className="text-xs font-mono text-zinc-400 px-1.5 py-0.5 rounded bg-white/[0.03] border border-white/[0.06]">
                     {sectionItems.length}
                   </span>
                 </div>
-                <span className="text-[11px] text-noc-muted hidden sm:inline-block">
-                  {sectionConfig.description}
-                </span>
+
+                <div className="text-[11px] text-zinc-400 font-mono hidden sm:inline">
+                  {sectionItems.length === 1 ? '1 item logged' : `${sectionItems.length} items logged`}
+                </div>
               </div>
 
-              {/* Section Content */}
+              {/* Section Items */}
               <div className="p-4 space-y-3">
                 {sectionItems.length === 0 ? (
-                  /* Calm "Nothing to report" state */
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-noc-card/40 border border-dashed border-noc-border text-noc-muted">
-                    <ShieldCheck className="w-4 h-4 text-slate-400 shrink-0" />
+                  /* Intentional Calm Empty State */
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-white/[0.01] border border-dashed border-white/[0.08] text-zinc-400">
+                    <Minus className="w-4 h-4 text-zinc-600 shrink-0" />
                     <div>
-                      <span className="text-xs font-medium text-slate-300 block">
+                      <span className="text-xs font-medium text-zinc-300 block">
                         Nothing to report
                       </span>
-                      <span className="text-[11px] text-slate-400">
-                        Confirmed quiet within the shift window. No active events matched this section.
+                      <span className="text-[11px] text-zinc-400 font-sans">
+                        Confirmed quiet within shift window. No activity matched this operational section.
                       </span>
                     </div>
                   </div>
                 ) : (
-                  /* List of Note Items */
                   sectionItems.map((item, idx) => (
                     <div
                       key={idx}
-                      className="group relative bg-noc-card hover:bg-noc-card/80 border border-noc-border hover:border-noc-borderLight rounded-lg p-4 transition-all"
+                      className="group relative bg-[#151518] hover-lift border border-white/[0.07] rounded-lg p-4 transition-all"
                     >
-                      {/* Left color bar */}
-                      <div
-                        className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${sectionConfig.colorClasses.accentLine}`}
-                      />
+                      {/* Left indicator accent line */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-lg ${theme.indicatorColor}`} />
 
                       <div className="pl-2">
-                        {/* Title line */}
-                        <div className="text-sm text-noc-text font-medium leading-relaxed">
+                        {/* Item Description */}
+                        <p className="text-xs sm:text-sm text-zinc-200 font-normal leading-relaxed">
                           {item.item}
-                        </div>
+                        </p>
 
                         {/* Metadata row */}
-                        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-noc-border/60">
+                        <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-white/[0.05]">
                           <div className="flex flex-wrap items-center gap-3">
-                            {/* Clickable Source Badge */}
+                            {/* Source-attribution tag styled like code snippet */}
                             <button
                               type="button"
                               onClick={() => onSelectSource(item)}
-                              title="Click to drill down into raw source events"
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-mono font-semibold border transition-all ${sectionConfig.colorClasses.badge}`}
+                              title="Click to inspect raw source telemetry"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.18] font-mono text-[11px] text-zinc-300 transition-colors"
                             >
                               <span>{item.source}</span>
-                              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                              <ChevronRight className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300 transition-colors" />
                             </button>
 
-                            {/* Timestamp */}
-                            <div className="flex items-center gap-1.5 text-xs text-noc-muted font-mono">
-                              <Clock className="w-3 h-3" />
+                            {/* Timestamp in monospace */}
+                            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono">
+                              <Clock className="w-3 h-3 text-zinc-500" />
                               <span>{item.timestamp}</span>
                             </div>
                           </div>
 
-                          {/* Progression badge if collapsed */}
+                          {/* Progression Badge if collapsed */}
                           {item.progression && item.progression.length > 1 && (
-                            <div className="text-[11px] font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
-                              Progression: {item.progression.join(' → ')}
+                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-500/[0.06] border border-blue-500/20 text-[11px] font-mono text-blue-300">
+                              <span className="text-zinc-400 text-[10px]">Progression:</span>
+                              <span>{item.progression.join(' → ')}</span>
                             </div>
                           )}
                         </div>

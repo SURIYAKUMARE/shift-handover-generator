@@ -24,14 +24,14 @@ import {
 } from './api';
 
 export const App: React.FC = () => {
-  // Theme state: dark mode default
+  // Dark mode by default
   const [darkMode, setDarkMode] = useState<boolean>(true);
 
   // Scenarios and Presets
   const [presets, setPresets] = useState<PresetScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<string>('busy');
 
-  // Shift Window Configuration
+  // Shift Window
   const [shiftWindow, setShiftWindow] = useState<ShiftWindow>({
     start: '2026-09-03T16:00:00+05:30',
     end: '2026-09-04T00:00:00+05:30',
@@ -59,7 +59,7 @@ export const App: React.FC = () => {
 
   const operator = 'Lead On-Call SRE';
 
-  // Toggle dark/light class on document
+  // Toggle dark/light classes on document
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -86,7 +86,7 @@ export const App: React.FC = () => {
           setShiftWindow(busyPreset.defaultWindow);
         }
       } catch (err) {
-        console.error('Initial setup error:', err);
+        console.error('Initialization error:', err);
       }
     }
     init();
@@ -107,7 +107,7 @@ export const App: React.FC = () => {
       setIsGenerating(true);
       setErrorMsg(null);
 
-      // Track previous hash for visual reproducibility match
+      // Save previous hash to verify reproducibility match visually
       if (generationResult?.reproducibility_hash) {
         setPreviousHash(generationResult.reproducibility_hash);
       }
@@ -117,11 +117,10 @@ export const App: React.FC = () => {
       const activeUnreachable =
         unreachableOverride !== undefined ? unreachableOverride : simulateUnreachable;
 
-      // Simulated local stage animation
       setStageLogs([
         {
           id: 'stage-init',
-          stage: 'Pipeline Initialized',
+          stage: 'Ingest Telemetry',
           status: 'running',
           message: `Ingesting sources for shift interval ${activeWindow.start} → ${activeWindow.end} (${activeWindow.timezone})…`,
           timestamp: new Date().toISOString(),
@@ -145,7 +144,7 @@ export const App: React.FC = () => {
           ...prev,
           {
             id: 'err-terminal',
-            stage: 'Generation Pipeline',
+            stage: 'Pipeline Exception',
             status: 'warning',
             message: `Pipeline exception: ${err.message}`,
             timestamp: new Date().toISOString(),
@@ -179,7 +178,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // Single-File PDF Export
+  // Export Handlers
   const handleExportPDF = async () => {
     if (!generationResult) return;
     await downloadPDFExport({
@@ -190,7 +189,6 @@ export const App: React.FC = () => {
     });
   };
 
-  // Single-File DOCX Export
   const handleExportDOCX = async () => {
     if (!generationResult) return;
     await downloadDOCXExport({
@@ -202,16 +200,22 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-noc-bg text-noc-text flex flex-col font-sans transition-colors duration-200">
-      {/* NOC Header */}
+    <div className="min-h-screen bg-[#0A0A0B] bg-ambient-radial text-[#EDEDED] flex flex-col font-sans transition-colors duration-200">
+      {/* Sticky Top Bar with Breadcrumb and Actions */}
       <Header
+        shiftWindow={shiftWindow}
+        isGenerating={isGenerating}
+        onGenerate={() => handleGenerate()}
+        onExportPDF={handleExportPDF}
+        onExportDOCX={handleExportDOCX}
+        reproducibilityHash={generationResult?.reproducibility_hash}
+        previousHash={previousHash}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        isGenerating={isGenerating}
-        operator={operator}
+        itemCount={generationResult?.items.length || 0}
       />
 
-      {/* Main Container */}
+      {/* Main Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 pb-28">
         {/* Scenario Switcher Bar */}
         <ScenarioBar
@@ -230,19 +234,17 @@ export const App: React.FC = () => {
           setEnabledSources={setEnabledSources}
           simulateUnreachable={simulateUnreachable}
           setSimulateUnreachable={setSimulateUnreachable}
-          onGenerate={() => handleGenerate()}
-          isGenerating={isGenerating}
           onRefreshHealth={handleRefreshHealth}
         />
 
-        {/* Pipeline Execution Trace */}
+        {/* Vertical Stepper Live Generation State */}
         <LiveGenerationState
           stageLogs={stageLogs}
           isGenerating={isGenerating}
           stats={generationResult?.stats}
         />
 
-        {/* Audit & Hostile Input Banners */}
+        {/* Hostile-Input / Telemetry Integrity Banner */}
         {generationResult && (
           <AuditBanner
             warnings={generationResult.warnings}
@@ -251,9 +253,9 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* Error notification if pipeline fails */}
+        {/* Critical Failure Banner */}
         {errorMsg && (
-          <div className="p-4 mb-6 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-mono">
+          <div className="p-4 mb-6 rounded-xl bg-red-500/[0.08] border border-red-500/20 text-red-300 text-xs font-mono">
             <strong>CRITICAL FAILURE:</strong> {errorMsg}
           </div>
         )}
@@ -269,7 +271,7 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Source Drill-Down Drawer (2-click verification) */}
+      {/* Source Drill-Down Drawer */}
       <SourceDrillDownDrawer
         item={selectedItem}
         onClose={() => setSelectedItem(null)}

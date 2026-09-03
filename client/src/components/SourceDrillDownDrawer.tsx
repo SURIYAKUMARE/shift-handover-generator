@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GeneratedNoteItem, Event as TelemetryEvent } from '../types';
-import { X, Clock, User, MessageSquare, Copy, ShieldCheck } from 'lucide-react';
+import { X, Clock, User, MessageSquare, Copy, Check, ShieldCheck } from 'lucide-react';
 
 interface SourceDrillDownDrawerProps {
   item: GeneratedNoteItem | null;
@@ -11,7 +11,8 @@ export const SourceDrillDownDrawer: React.FC<SourceDrillDownDrawerProps> = ({
   item,
   onClose,
 }) => {
-  // ESC key to close
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -26,102 +27,106 @@ export const SourceDrillDownDrawer: React.FC<SourceDrillDownDrawerProps> = ({
 
   const handleCopyJSON = () => {
     navigator.clipboard.writeText(JSON.stringify(rawEvents, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Drawer Panel */}
-      <div className="relative w-full max-w-2xl bg-noc-panel border-l border-noc-border shadow-2xl flex flex-col h-full z-10 overflow-hidden animate-in slide-in-from-right duration-200">
+      <div className="relative w-full max-w-2xl bg-[#111114] border-l border-white/[0.08] shadow-2xl flex flex-col h-full z-10 overflow-hidden animate-in slide-in-from-right duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-noc-border flex items-center justify-between bg-noc-panel">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30 font-semibold">
+        <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between bg-[#141418]">
+          <div className="min-w-0 pr-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono text-xs px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.08] text-blue-400 font-semibold">
                 {item.source}
               </span>
-              <span className="text-xs font-mono text-noc-muted">RAW EVENT DRILLDOWN</span>
+              <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
+                Source Traceability Inspection
+              </span>
             </div>
-            <h3 className="text-base font-semibold text-noc-text mt-1 line-clamp-1">
+            <h3 className="text-sm font-semibold text-zinc-100 truncate">
               {item.item}
             </h3>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-noc-card border border-noc-border text-noc-muted hover:text-noc-text hover:bg-noc-panelHover transition-colors"
+            className="p-1.5 rounded-lg bg-transparent hover:bg-white/[0.06] text-zinc-400 hover:text-zinc-200 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Verification Guarantee Pill */}
-        <div className="px-6 py-2.5 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-emerald-400 font-mono">
-            <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span>GROUNDING VERIFIED: 100% Traceable to {rawEvents.length} raw telemetry event(s)</span>
+        {/* Grounding Verification Seal */}
+        <div className="px-6 py-2.5 bg-emerald-500/[0.04] border-b border-emerald-500/15 flex items-center justify-between text-xs font-mono">
+          <div className="flex items-center gap-2 text-emerald-400">
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+            <span>GROUNDED: 100% Traceable to {rawEvents.length} raw telemetry update(s)</span>
           </div>
           <button
             onClick={handleCopyJSON}
-            className="flex items-center gap-1 text-[11px] font-mono text-emerald-300 hover:text-emerald-200"
+            className="flex items-center gap-1 text-[11px] text-zinc-400 hover:text-zinc-200 transition-colors"
           >
-            <Copy className="w-3 h-3" />
-            <span>Copy Raw JSON</span>
+            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+            <span>{copied ? 'Copied' : 'Copy JSON'}</span>
           </button>
         </div>
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Section: Deduplication Progression Timeline */}
+          {/* Deduplication Progression Timeline */}
           <div>
-            <h4 className="text-xs font-mono uppercase tracking-wider text-noc-muted mb-3 flex items-center gap-2">
+            <h4 className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold mb-3.5 flex items-center gap-2">
               <Clock className="w-3.5 h-3.5 text-blue-400" />
-              Event Progression Timeline ({rawEvents.length} updates collapsed)
+              Event Timeline Before Collapse ({rawEvents.length} updates)
             </h4>
 
-            <div className="relative border-l-2 border-noc-border ml-3 pl-5 space-y-5">
+            <div className="relative border-l border-white/[0.08] ml-2.5 pl-5 space-y-4">
               {rawEvents.map((evt: TelemetryEvent, idx: number) => (
-                <div key={idx} className="relative group">
-                  {/* Timeline dot */}
-                  <div className="absolute -left-[27px] top-1.5 w-3 h-3 rounded-full bg-blue-500 border-2 border-noc-panel ring-2 ring-blue-500/20" />
+                <div key={idx} className="relative">
+                  {/* Timeline node */}
+                  <div className="absolute -left-[25px] top-2 w-2.5 h-2.5 rounded-full bg-blue-500 ring-4 ring-[#111114]" />
 
-                  <div className="bg-noc-card border border-noc-border rounded-lg p-3.5 hover:border-noc-borderLight transition-colors">
+                  <div className="bg-[#16161A] border border-white/[0.07] rounded-lg p-3.5">
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-noc-panel border border-noc-border text-noc-text uppercase">
+                        <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-white/[0.03] border border-white/[0.06] text-zinc-300">
                           {evt.status}
                         </span>
                         {evt.severity && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20 uppercase">
+                          <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber-500/[0.08] text-amber-300 border border-amber-500/20">
                             {evt.severity}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs font-mono text-noc-muted">
+                      <span className="text-[11px] font-mono text-zinc-500">
                         {evt.timestamp}
                       </span>
                     </div>
 
-                    <p className="text-xs text-noc-text leading-relaxed">
+                    <p className="text-xs text-zinc-200 leading-relaxed font-sans">
                       {evt.summary}
                     </p>
 
                     {(evt.author || evt.channel) && (
-                      <div className="mt-2.5 pt-2 border-t border-noc-border/50 flex flex-wrap items-center gap-3 text-[11px] font-mono text-noc-muted">
+                      <div className="mt-2.5 pt-2 border-t border-white/[0.04] flex flex-wrap items-center gap-3 text-[11px] font-mono text-zinc-400">
                         {evt.author && (
                           <span className="flex items-center gap-1">
-                            <User className="w-3 h-3" />
+                            <User className="w-3 h-3 text-zinc-500" />
                             {evt.author}
                           </span>
                         )}
                         {evt.channel && (
-                          <span className="flex items-center gap-1 text-emerald-400">
-                            <MessageSquare className="w-3 h-3" />
+                          <span className="flex items-center gap-1 text-zinc-300">
+                            <MessageSquare className="w-3 h-3 text-zinc-500" />
                             {evt.channel}
                           </span>
                         )}
@@ -133,28 +138,26 @@ export const SourceDrillDownDrawer: React.FC<SourceDrillDownDrawerProps> = ({
             </div>
           </div>
 
-          {/* Section: Raw Telemetry JSON */}
+          {/* Raw JSON Ingest Telemetry */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-mono uppercase tracking-wider text-noc-muted">
-                Raw Ingest Payload
-              </h4>
-            </div>
+            <h4 className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold mb-2.5">
+              Raw Telemetry Payload
+            </h4>
 
-            <pre className="p-4 rounded-lg bg-[#050811] border border-noc-border text-xs font-mono text-slate-300 overflow-x-auto leading-tight">
+            <pre className="p-4 rounded-lg bg-[#0A0A0C] border border-white/[0.06] text-[11px] font-mono text-zinc-300 overflow-x-auto leading-relaxed">
               <code>{JSON.stringify(rawEvents, null, 2)}</code>
             </pre>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-noc-border bg-noc-panel flex items-center justify-between">
-          <span className="text-xs text-noc-muted font-mono">
-            Source: <code className="text-blue-400">{item.source}</code>
+        <div className="px-6 py-3 border-t border-white/[0.06] bg-[#141418] flex items-center justify-between">
+          <span className="text-[11px] text-zinc-500 font-mono">
+            Citation: <code className="text-zinc-300">{item.source}</code>
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-noc-card hover:bg-noc-panelHover border border-noc-border text-xs font-medium text-noc-text transition-colors"
+            className="px-3.5 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-medium text-zinc-200 transition-colors"
           >
             Close (Esc)
           </button>

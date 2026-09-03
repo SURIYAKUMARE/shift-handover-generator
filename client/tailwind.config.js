@@ -8,29 +8,55 @@ export default {
   theme: {
     extend: {
       colors: {
-        noc: {
-          bg: '#090D16',
-          panel: '#0F1626',
-          panelHover: '#141E33',
-          card: '#162035',
-          border: '#1E2D4A',
-          borderLight: '#2A3C61',
-          text: '#F1F5F9',
-          muted: '#94A3B8',
-          accent: '#3B82F6',
+        brand: {
+          bg: '#0A0A0B',
+          panel: '#121215',
+          panelHover: '#16161B',
+          card: '#151518',
+          cardHover: '#1A1A1F',
+          border: 'rgba(255, 255, 255, 0.07)',
+          borderHover: 'rgba(255, 255, 255, 0.14)',
+          text: '#EDEDED',
+          textMuted: '#A1A1AA',
+          textSubtle: '#71717A',
+          accent: '#3B82F6',       // Electric blue
           accentHover: '#2563EB',
+          accentGlow: 'rgba(59, 130, 246, 0.15)',
         },
-        status: {
-          completed: '#10B981', // green
-          progress: '#3B82F6',  // blue
-          blocker: '#F59E0B',   // amber
-          watch: '#8B5CF6',     // purple/violet
-        }
+        semantic: {
+          completed: '#10B981',    // Emerald
+          completedTint: 'rgba(16, 185, 129, 0.08)',
+          completedBorder: 'rgba(16, 185, 129, 0.2)',
+
+          progress: '#3B82F6',     // Electric Blue
+          progressTint: 'rgba(59, 130, 246, 0.08)',
+          progressBorder: 'rgba(59, 130, 246, 0.2)',
+
+          blocker: '#F59E0B',      // Amber
+          blockerTint: 'rgba(245, 158, 11, 0.08)',
+          blockerBorder: 'rgba(245, 158, 11, 0.2)',
+
+          watch: '#94A3B8',        // Slate/Gray
+          watchTint: 'rgba(148, 163, 184, 0.08)',
+          watchBorder: 'rgba(148, 163, 184, 0.2)',
+        },
       },
       fontFamily: {
-        mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
-        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
-      }
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['JetBrains Mono', 'SF Mono', 'Fira Code', 'Menlo', 'monospace'],
+      },
+      borderRadius: {
+        DEFAULT: '8px',
+        md: '8px',
+        lg: '10px',
+        xl: '12px',
+        '2xl': '14px',
+      },
+      boxShadow: {
+        'card': '0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.25)',
+        'card-hover': '0 4px 20px -2px rgba(0, 0, 0, 0.6), 0 2px 6px -1px rgba(0, 0, 0, 0.4)',
+        'accent-glow': '0 0 20px -4px rgba(59, 130, 246, 0.35)',
+      },
     },
   },
   plugins: [],

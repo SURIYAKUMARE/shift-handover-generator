@@ -1,6 +1,6 @@
 import React from 'react';
 import { PresetScenario } from '../types';
-import { Sparkles, AlertTriangle, CheckCircle2, Clock, ShieldAlert, Sliders } from 'lucide-react';
+import { Sparkles, Check, Clock, AlertTriangle, Shield, Sliders } from 'lucide-react';
 
 interface ScenarioBarProps {
   presets: PresetScenario[];
@@ -11,10 +11,10 @@ interface ScenarioBarProps {
 
 const SCENARIO_ICONS: Record<string, React.ReactNode> = {
   busy: <Sparkles className="w-3.5 h-3.5 text-blue-400" />,
-  quiet: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />,
-  messy: <Clock className="w-3.5 h-3.5 text-purple-400" />,
+  quiet: <Check className="w-3.5 h-3.5 text-emerald-400" />,
+  messy: <Clock className="w-3.5 h-3.5 text-amber-400" />,
   hostile: <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />,
-  zero: <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />,
+  zero: <Shield className="w-3.5 h-3.5 text-zinc-400" />,
 };
 
 export const ScenarioBar: React.FC<ScenarioBarProps> = ({
@@ -24,19 +24,17 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
   disabled,
 }) => {
   return (
-    <div className="bg-noc-panel border border-noc-border rounded-xl p-4 mb-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
-        <div>
-          <span className="text-xs uppercase font-mono tracking-wider text-noc-muted">
-            Shift Scenario Presets (Test Matrices)
-          </span>
-          <p className="text-xs text-noc-muted mt-0.5">
-            Select a verified shift profile to inspect layout density, deduplication collapse, or hostile input handling.
-          </p>
-        </div>
+    <div className="bg-[#121215] border border-white/[0.07] rounded-xl p-3.5 mb-6 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2.5">
+        <span className="text-[11px] uppercase tracking-wider font-mono text-zinc-400 font-semibold">
+          Shift Test Scenarios
+        </span>
+        <span className="text-[11px] text-zinc-400 font-mono hidden sm:inline">
+          Deduplication stress • Empty states • Hostile fault recovery
+        </span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-1.5">
         {presets.map((preset) => {
           const isSelected = selectedScenario === preset.id;
           return (
@@ -44,17 +42,17 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
               key={preset.id}
               onClick={() => onSelectScenario(preset.id)}
               disabled={disabled}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                 isSelected
-                  ? 'bg-blue-600/15 border-blue-500 text-blue-400 shadow-sm'
-                  : 'bg-noc-card/70 border-noc-border text-noc-muted hover:text-noc-text hover:bg-noc-panelHover'
+                  ? 'bg-white/[0.08] border-white/[0.18] text-white shadow-sm'
+                  : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {SCENARIO_ICONS[preset.id] || <Sliders className="w-3.5 h-3.5" />}
               <span>{preset.name.split('(')[0].trim()}</span>
               {preset.id === 'hostile' && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono">
-                  RESILIENCE
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/[0.1] text-amber-300 font-mono">
+                  FAULT
                 </span>
               )}
             </button>
@@ -64,14 +62,14 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
         <button
           onClick={() => onSelectScenario('custom')}
           disabled={disabled}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
             selectedScenario === 'custom'
-              ? 'bg-blue-600/15 border-blue-500 text-blue-400 shadow-sm'
-              : 'bg-noc-card/70 border-noc-border text-noc-muted hover:text-noc-text hover:bg-noc-panelHover'
+              ? 'bg-white/[0.08] border-white/[0.18] text-white shadow-sm'
+              : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <Sliders className="w-3.5 h-3.5 text-slate-400" />
-          <span>Custom Shift Window</span>
+          <Sliders className="w-3.5 h-3.5 text-zinc-500" />
+          <span>Custom Interval</span>
         </button>
       </div>
     </div>
