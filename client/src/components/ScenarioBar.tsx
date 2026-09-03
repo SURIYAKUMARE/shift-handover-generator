@@ -1,6 +1,6 @@
 import React from 'react';
 import { PresetScenario } from '../types';
-import { Sparkles, Check, Clock, AlertTriangle, Shield, Sliders } from 'lucide-react';
+import { Sliders } from 'lucide-react';
 
 interface ScenarioBarProps {
   presets: PresetScenario[];
@@ -9,14 +9,6 @@ interface ScenarioBarProps {
   disabled?: boolean;
 }
 
-const SCENARIO_ICONS: Record<string, React.ReactNode> = {
-  busy: <Sparkles className="w-3.5 h-3.5 text-blue-400" />,
-  quiet: <Check className="w-3.5 h-3.5 text-emerald-400" />,
-  messy: <Clock className="w-3.5 h-3.5 text-amber-400" />,
-  hostile: <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />,
-  zero: <Shield className="w-3.5 h-3.5 text-zinc-400" />,
-};
-
 export const ScenarioBar: React.FC<ScenarioBarProps> = ({
   presets,
   selectedScenario,
@@ -24,13 +16,13 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
   disabled,
 }) => {
   return (
-    <div className="bg-[#121215] border border-white/[0.07] rounded-xl p-3.5 mb-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2.5">
-        <span className="text-[11px] uppercase tracking-wider font-mono text-zinc-400 font-semibold">
+    <div className="bg-[#161B22] border border-[#30363D] rounded-md p-3 mb-5 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+        <span className="text-xs font-semibold text-[#F0F6FC]">
           Shift Test Scenarios
         </span>
-        <span className="text-[11px] text-zinc-400 font-mono hidden sm:inline">
-          Deduplication stress • Empty states • Hostile fault recovery
+        <span className="text-[11px] text-[#8B949E] font-sans">
+          Verify layout density, progression collapse, and hostile fault isolation
         </span>
       </div>
 
@@ -42,16 +34,15 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
               key={preset.id}
               onClick={() => onSelectScenario(preset.id)}
               disabled={disabled}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
                 isSelected
-                  ? 'bg-white/[0.08] border-white/[0.18] text-white shadow-sm'
-                  : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
+                  ? 'bg-[#21262D] border-[#8B949E] text-[#F0F6FC] font-semibold'
+                  : 'bg-[#0D1117] border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC] hover:border-[#6E7681]'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {SCENARIO_ICONS[preset.id] || <Sliders className="w-3.5 h-3.5" />}
               <span>{preset.name.split('(')[0].trim()}</span>
               {preset.id === 'hostile' && (
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/[0.1] text-amber-300 font-mono">
+                <span className="ml-1.5 text-[10px] px-1 py-0.2 rounded bg-[#D29922]/15 text-[#D29922] font-mono">
                   FAULT
                 </span>
               )}
@@ -62,13 +53,13 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
         <button
           onClick={() => onSelectScenario('custom')}
           disabled={disabled}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
             selectedScenario === 'custom'
-              ? 'bg-white/[0.08] border-white/[0.18] text-white shadow-sm'
-              : 'bg-transparent border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
+              ? 'bg-[#21262D] border-[#8B949E] text-[#F0F6FC] font-semibold'
+              : 'bg-[#0D1117] border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC] hover:border-[#6E7681]'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <Sliders className="w-3.5 h-3.5 text-zinc-500" />
+          <Sliders className="w-3 h-3 text-[#8B949E]" />
           <span>Custom Interval</span>
         </button>
       </div>

@@ -15,7 +15,7 @@ interface ShiftSetupProps {
 
 const TIMEZONES = [
   { label: 'Asia/Kolkata (IST, +05:30)', value: 'Asia/Kolkata' },
-  { label: 'UTC (Universal Time, +00:00)', value: 'UTC' },
+  { label: 'UTC (Universal Coordinated Time, +00:00)', value: 'UTC' },
   { label: 'America/New_York (EST, -04:00)', value: 'America/New_York' },
   { label: 'America/Los_Angeles (PST, -07:00)', value: 'America/Los_Angeles' },
   { label: 'Europe/London (BST, +01:00)', value: 'Europe/London' },
@@ -44,71 +44,71 @@ export const ShiftSetup: React.FC<ShiftSetupProps> = ({
   const getSourceIcon = (id: string) => {
     switch (id) {
       case 'ticketing':
-        return <Database className="w-3.5 h-3.5 text-zinc-300" />;
+        return <Database className="w-3.5 h-3.5 text-[#8B949E]" />;
       case 'incident':
-        return <Radio className="w-3.5 h-3.5 text-zinc-300" />;
+        return <Radio className="w-3.5 h-3.5 text-[#8B949E]" />;
       case 'chat':
-        return <MessageSquare className="w-3.5 h-3.5 text-zinc-300" />;
+        return <MessageSquare className="w-3.5 h-3.5 text-[#8B949E]" />;
       default:
-        return <Cpu className="w-3.5 h-3.5 text-zinc-300" />;
+        return <Cpu className="w-3.5 h-3.5 text-[#8B949E]" />;
     }
   };
 
   return (
-    <div className="bg-[#121215] border border-white/[0.07] rounded-xl p-5 mb-8 shadow-sm">
+    <div className="bg-[#161B22] border border-[#30363D] rounded-md p-4 mb-6 shadow-sm">
       {/* Title */}
-      <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
-        <div>
-          <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-blue-400" />
-            Shift Operating Window & Sources
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#30363D] gap-2">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-[#58A6FF]" />
+          <h2 className="text-xs font-semibold text-[#F0F6FC] uppercase tracking-wide">
+            Shift Boundary Configuration
           </h2>
-          <p className="text-xs text-zinc-400 mt-0.5 font-sans">
-            Telemetry is strictly bounded to <code className="text-zinc-300 font-mono text-[11px] bg-white/[0.04] px-1.5 py-0.5 rounded">[shift_start, shift_end)</code>. No backlog overflow.
-          </p>
+        </div>
+        <div className="text-[11px] text-[#8B949E] font-sans">
+          Events filtered strictly to <code className="text-[#C9D1D9] font-mono text-[11px] bg-[#0D1117] px-1 py-0.5 rounded border border-[#30363D]">[start, end)</code>
         </div>
       </div>
 
       {/* Inputs Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 mt-4">
         {/* Shift Start */}
         <div>
-          <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold mb-1.5">
+          <label className="block text-[11px] font-sans text-[#8B949E] mb-1 font-medium">
             Shift Window Start (Inclusive)
           </label>
           <input
             type="text"
             value={shiftWindow.start}
             onChange={(e) => setShiftWindow({ ...shiftWindow, start: e.target.value })}
-            className="w-full bg-[#0E0E11] border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            className="w-full bg-[#0D1117] border border-[#30363D] rounded px-3 py-1.5 text-xs font-mono text-[#F0F6FC] focus:outline-none focus:border-[#58A6FF] transition-colors"
             placeholder="YYYY-MM-DDTHH:mm:ss+05:30"
           />
         </div>
 
         {/* Shift End */}
         <div>
-          <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold mb-1.5">
+          <label className="block text-[11px] font-sans text-[#8B949E] mb-1 font-medium">
             Shift Window End (Exclusive)
           </label>
           <input
             type="text"
             value={shiftWindow.end}
             onChange={(e) => setShiftWindow({ ...shiftWindow, end: e.target.value })}
-            className="w-full bg-[#0E0E11] border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            className="w-full bg-[#0D1117] border border-[#30363D] rounded px-3 py-1.5 text-xs font-mono text-[#F0F6FC] focus:outline-none focus:border-[#58A6FF] transition-colors"
             placeholder="YYYY-MM-DDTHH:mm:ss+05:30"
           />
         </div>
 
         {/* Timezone */}
         <div>
-          <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold mb-1.5 flex items-center justify-between">
+          <label className="block text-[11px] font-sans text-[#8B949E] mb-1 font-medium flex items-center justify-between">
             <span>Timezone Normalization</span>
-            <Globe className="w-3 h-3 text-zinc-500" />
+            <Globe className="w-3 h-3 text-[#6E7681]" />
           </label>
           <select
             value={shiftWindow.timezone}
             onChange={(e) => setShiftWindow({ ...shiftWindow, timezone: e.target.value })}
-            className="w-full bg-[#0E0E11] border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            className="w-full bg-[#0D1117] border border-[#30363D] rounded px-3 py-1.5 text-xs font-mono text-[#F0F6FC] focus:outline-none focus:border-[#58A6FF] transition-colors"
           >
             {TIMEZONES.map((tz) => (
               <option key={tz.value} value={tz.value}>
@@ -119,27 +119,27 @@ export const ShiftSetup: React.FC<ShiftSetupProps> = ({
         </div>
       </div>
 
-      {/* Connected Sources Row */}
-      <div className="mt-6 pt-5 border-t border-white/[0.06]">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
-            Telemetry Connections
+      {/* Connected Telemetry Feeds */}
+      <div className="mt-4 pt-3.5 border-t border-[#21262D]">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] font-sans text-[#8B949E] font-medium">
+            Connected Telemetry Feeds
           </span>
           <button
             onClick={onRefreshHealth}
-            className="text-[11px] text-zinc-400 hover:text-zinc-200 flex items-center gap-1 font-mono transition-colors"
+            className="text-[11px] text-[#8B949E] hover:text-[#F0F6FC] flex items-center gap-1 font-mono transition-colors"
             title="Ping connected sources"
           >
             <RefreshCw className="w-3 h-3" />
-            <span>Ping Sources</span>
+            <span>Ping Feeds</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
           {[
-            { id: 'ticketing', name: 'Jira / Zendesk', desc: 'Tickets & Service Desk' },
-            { id: 'incident', name: 'PagerDuty', desc: 'Alerts & Incidents' },
-            { id: 'chat', name: 'Slack War-Rooms', desc: '#incident channels' },
+            { id: 'ticketing', name: 'Jira / Zendesk', desc: 'Ticketing Telemetry' },
+            { id: 'incident', name: 'PagerDuty', desc: 'Incident Alerts' },
+            { id: 'chat', name: 'Slack War-Rooms', desc: '#incident-channels' },
           ].map((src) => {
             const isEnabled = enabledSources.includes(src.id);
             const health = sourcesHealth[src.id];
@@ -149,37 +149,35 @@ export const ShiftSetup: React.FC<ShiftSetupProps> = ({
               <div
                 key={src.id}
                 onClick={() => toggleSource(src.id)}
-                className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
+                className={`flex items-center justify-between p-2.5 rounded border cursor-pointer transition-colors ${
                   isEnabled
-                    ? 'bg-[#16161A] border-white/[0.09] hover:border-white/[0.18]'
-                    : 'bg-[#101013] border-white/[0.04] opacity-40'
+                    ? 'bg-[#0D1117] border-[#30363D] hover:border-[#8B949E]/50'
+                    : 'bg-[#0D1117]/50 border-[#21262D] opacity-40'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-md bg-white/[0.03] border border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded bg-[#161B22]">
                     {getSourceIcon(src.id)}
                   </div>
                   <div>
-                    <span className="text-xs font-medium text-zinc-200 block">{src.name}</span>
-                    <span className="text-[10px] text-zinc-500 font-mono block">{src.desc}</span>
+                    <span className="text-xs font-medium text-[#F0F6FC] block">{src.name}</span>
+                    <span className="text-[10px] text-[#6E7681] font-mono block">{src.desc}</span>
                   </div>
                 </div>
 
-                {/* Status chip with subtle background tint + colored dot */}
                 <div>
                   {isUnreachable ? (
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-500/[0.08] text-amber-400 border border-amber-500/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono text-[#D29922] bg-[#D29922]/10 border border-[#D29922]/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D29922]" />
                       UNREACHABLE
                     </span>
                   ) : health?.status === 'connected' ? (
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/[0.08] text-emerald-400 border border-emerald-500/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono text-[#3FB950] bg-[#3FB950]/10 border border-[#3FB950]/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3FB950]" />
                       {health.latency_ms}ms
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-white/[0.03] text-zinc-400 border border-white/[0.06]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono text-[#8B949E] bg-[#161B22] border border-[#30363D]">
                       READY
                     </span>
                   )}
@@ -189,31 +187,31 @@ export const ShiftSetup: React.FC<ShiftSetupProps> = ({
           })}
         </div>
 
-        {/* Fault Injection Simulation Bar */}
-        <div className="mt-4 pt-3 flex flex-wrap items-center gap-2.5 text-xs">
-          <span className="font-mono text-[11px] text-zinc-500">Fault Injection:</span>
+        {/* Operational Fault Injection */}
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-sans text-[11px] text-[#6E7681]">Fault injection tests:</span>
           <button
             type="button"
             onClick={() => setSimulateUnreachable(simulateUnreachable === 'chat' ? '' : 'chat')}
-            className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${
+            className={`px-2 py-0.5 rounded text-[11px] font-mono border transition-colors ${
               simulateUnreachable === 'chat'
-                ? 'bg-amber-500/[0.1] border-amber-500/30 text-amber-300'
-                : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-zinc-200'
+                ? 'bg-[#D29922]/15 border-[#D29922] text-[#D29922]'
+                : 'bg-[#0D1117] border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC]'
             }`}
           >
-            {simulateUnreachable === 'chat' ? '✓ Simulating Slack Outage (503)' : 'Simulate Slack Outage'}
+            {simulateUnreachable === 'chat' ? 'Simulating Slack 503 (Active)' : 'Simulate Slack 503 outage'}
           </button>
 
           <button
             type="button"
             onClick={() => setSimulateUnreachable(simulateUnreachable === 'ticketing' ? '' : 'ticketing')}
-            className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors ${
+            className={`px-2 py-0.5 rounded text-[11px] font-mono border transition-colors ${
               simulateUnreachable === 'ticketing'
-                ? 'bg-amber-500/[0.1] border-amber-500/30 text-amber-300'
-                : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-zinc-200'
+                ? 'bg-[#D29922]/15 border-[#D29922] text-[#D29922]'
+                : 'bg-[#0D1117] border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC]'
             }`}
           >
-            {simulateUnreachable === 'ticketing' ? '✓ Simulating Jira Timeout' : 'Simulate Jira Timeout'}
+            {simulateUnreachable === 'ticketing' ? 'Simulating Jira timeout (Active)' : 'Simulate Jira timeout'}
           </button>
         </div>
       </div>

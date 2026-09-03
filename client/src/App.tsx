@@ -24,14 +24,14 @@ import {
 } from './api';
 
 export const App: React.FC = () => {
-  // Dark mode by default
+  // Low-strain console dark mode default
   const [darkMode, setDarkMode] = useState<boolean>(true);
 
   // Scenarios and Presets
   const [presets, setPresets] = useState<PresetScenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<string>('busy');
 
-  // Shift Window
+  // Shift Window Configuration
   const [shiftWindow, setShiftWindow] = useState<ShiftWindow>({
     start: '2026-09-03T16:00:00+05:30',
     end: '2026-09-04T00:00:00+05:30',
@@ -97,7 +97,7 @@ export const App: React.FC = () => {
       const health = await fetchSourcesStatus();
       setSourcesHealth(health);
     } catch (err: any) {
-      console.error('Ping sources failed:', err);
+      console.error('Ping feeds failed:', err);
     }
   };
 
@@ -107,7 +107,7 @@ export const App: React.FC = () => {
       setIsGenerating(true);
       setErrorMsg(null);
 
-      // Save previous hash to verify reproducibility match visually
+      // Track previous hash for visual reproducibility match
       if (generationResult?.reproducibility_hash) {
         setPreviousHash(generationResult.reproducibility_hash);
       }
@@ -120,9 +120,9 @@ export const App: React.FC = () => {
       setStageLogs([
         {
           id: 'stage-init',
-          stage: 'Ingest Telemetry',
+          stage: 'Ingesting Telemetry',
           status: 'running',
-          message: `Ingesting sources for shift interval ${activeWindow.start} → ${activeWindow.end} (${activeWindow.timezone})…`,
+          message: `Ingesting telemetry feeds for interval ${activeWindow.start} to ${activeWindow.end} (${activeWindow.timezone})...`,
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -139,12 +139,12 @@ export const App: React.FC = () => {
         setStageLogs(result.stage_logs);
         setSourcesHealth(result.sources_status);
       } catch (err: any) {
-        setErrorMsg(err.message || 'Failed to generate shift handover note');
+        setErrorMsg(err.message || 'Failed to compile shift handover note');
         setStageLogs((prev) => [
           ...prev,
           {
             id: 'err-terminal',
-            stage: 'Pipeline Exception',
+            stage: 'Compilation Halt',
             status: 'warning',
             message: `Pipeline exception: ${err.message}`,
             timestamp: new Date().toISOString(),
@@ -157,7 +157,7 @@ export const App: React.FC = () => {
     [selectedScenario, shiftWindow, enabledSources, simulateUnreachable, generationResult]
   );
 
-  // Initial auto-generation on first render once presets ready
+  // Initial auto-compilation on first load once presets ready
   useEffect(() => {
     if (presets.length > 0 && !generationResult && !isGenerating) {
       handleGenerate('busy');
@@ -178,7 +178,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // Export Handlers
+  // Single-File Export Handlers
   const handleExportPDF = async () => {
     if (!generationResult) return;
     await downloadPDFExport({
@@ -200,8 +200,8 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] bg-ambient-radial text-[#EDEDED] flex flex-col font-sans transition-colors duration-200">
-      {/* Sticky Top Bar with Breadcrumb and Actions */}
+    <div className="min-h-screen bg-[#0D1117] text-[#F0F6FC] flex flex-col font-sans">
+      {/* Shift Watch Log Header (Relay baton framing) */}
       <Header
         shiftWindow={shiftWindow}
         isGenerating={isGenerating}
@@ -215,9 +215,9 @@ export const App: React.FC = () => {
         itemCount={generationResult?.items.length || 0}
       />
 
-      {/* Main Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 pb-28">
-        {/* Scenario Switcher Bar */}
+      {/* Main Ledger Workspace */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 pb-24">
+        {/* Test Scenarios Presets */}
         <ScenarioBar
           presets={presets}
           selectedScenario={selectedScenario}
@@ -225,7 +225,7 @@ export const App: React.FC = () => {
           disabled={isGenerating}
         />
 
-        {/* Shift Window Configuration */}
+        {/* Operating Window & Feed Configuration */}
         <ShiftSetup
           shiftWindow={shiftWindow}
           setShiftWindow={setShiftWindow}
@@ -237,14 +237,14 @@ export const App: React.FC = () => {
           onRefreshHealth={handleRefreshHealth}
         />
 
-        {/* Vertical Stepper Live Generation State */}
+        {/* Vertical Compilation Stepper Trace */}
         <LiveGenerationState
           stageLogs={stageLogs}
           isGenerating={isGenerating}
           stats={generationResult?.stats}
         />
 
-        {/* Hostile-Input / Telemetry Integrity Banner */}
+        {/* Telemetry Ingestion Notice Banner */}
         {generationResult && (
           <AuditBanner
             warnings={generationResult.warnings}
@@ -253,14 +253,14 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* Critical Failure Banner */}
+        {/* Critical Failure Notice */}
         {errorMsg && (
-          <div className="p-4 mb-6 rounded-xl bg-red-500/[0.08] border border-red-500/20 text-red-300 text-xs font-mono">
-            <strong>CRITICAL FAILURE:</strong> {errorMsg}
+          <div className="p-3.5 mb-5 rounded bg-[#161B22] border border-[#D29922]/50 text-[#F0F6FC] text-xs font-mono">
+            <strong className="text-[#D29922]">Ingestion Failure:</strong> {errorMsg}
           </div>
         )}
 
-        {/* Structured Note Review Screen */}
+        {/* Operational Note Review Ledger */}
         {generationResult && (
           <NoteReviewScreen
             items={generationResult.items}
@@ -271,13 +271,13 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Source Drill-Down Drawer */}
+      {/* Evidence Docket Drawer */}
       <SourceDrillDownDrawer
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
       />
 
-      {/* Sticky Export & Reproducibility Bar */}
+      {/* Sticky Handoff Bar */}
       {generationResult && (
         <ExportBar
           onExportPDF={handleExportPDF}
