@@ -337,8 +337,8 @@ export const App: React.FC = () => {
         itemCount={generationResult?.items.length || 0}
       />
 
-      {/* Main Ledger Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 pb-24">
+      {/* Main Ledger Workspace (Spacious & High-Legibility) */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-7 pb-28">
         {/* Shift Relay Baton Hero Strip */}
         <RelayTransferStrip
           shiftWindow={shiftWindow}

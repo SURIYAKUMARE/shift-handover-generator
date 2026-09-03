@@ -65,13 +65,13 @@ export const ExportBar: React.FC<ExportBarProps> = ({
   const isMatched = previousHash && previousHash === reproducibilityHash;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#12171F]/95 backdrop-blur-md border-t border-[#1E2633] px-4 sm:px-6 py-2.5 shadow-dock">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#12171F]/95 backdrop-blur-md border-t border-[#1E2633] px-4 sm:px-8 py-3.5 shadow-dock">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         {/* Left: Reproducibility & Fingerprint */}
-        <div className="flex flex-wrap items-center gap-2.5 text-xs font-mono">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0A0D12] border border-[#283446] text-[#94A3B8]">
+        <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm font-mono">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#0A0D12] border border-[#283446] text-[#94A3B8]">
             <span>Digest:</span>
-            <span className="text-[#F8FAFC] font-semibold">
+            <span className="text-[#F8FAFC] font-bold">
               {reproducibilityHash.substring(0, 16)}...
             </span>
             <button
@@ -80,40 +80,40 @@ export const ExportBar: React.FC<ExportBarProps> = ({
               title="Copy complete SHA-256 hash"
             >
               {copiedHash ? (
-                <Check className="w-3 h-3 text-emerald-400" />
+                <Check className="w-4 h-4 text-emerald-400" />
               ) : (
-                <Copy className="w-3 h-3" />
+                <Copy className="w-3.5 h-3.5" />
               )}
             </button>
           </div>
 
           {/* Verification Badge */}
           {isMatched ? (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-sans font-medium">
-              <ShieldCheck className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 text-xs sm:text-sm font-sans font-semibold">
+              <ShieldCheck className="w-4 h-4" />
               <span>Byte-for-byte identical output verified</span>
             </div>
           ) : (
-            <div className="text-[#94A3B8] text-[11px] font-sans hidden md:inline">
+            <div className="text-[#94A3B8] text-xs sm:text-sm font-sans hidden md:inline">
               Verified ledger items: <strong className="text-[#F8FAFC]">{itemCount}</strong>
             </div>
           )}
 
-          <span className="text-[11px] text-[#64748B] font-sans hidden lg:inline">
+          <span className="text-xs text-[#64748B] font-sans hidden lg:inline">
             Compiled: {new Date(generatedAt).toLocaleTimeString()}
           </span>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        {/* Right: Actions (Larger & Prominent) */}
+        <div className="flex items-center gap-2.5">
           {/* Regenerate */}
           <button
             onClick={onRegenerate}
             disabled={isGenerating}
             title="Regenerate identical window to verify reproducibility"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs font-sans text-[#F8FAFC] transition-colors disabled:opacity-50 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs sm:text-sm font-medium text-[#F8FAFC] transition-colors disabled:opacity-50 shadow-sm"
           >
-            <RefreshCw className={`w-3 h-3 ${isGenerating ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
             <span>Regenerate (Verify)</span>
           </button>
 
@@ -121,9 +121,9 @@ export const ExportBar: React.FC<ExportBarProps> = ({
           <button
             onClick={handlePDF}
             disabled={isExportingPDF || isGenerating || itemCount === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs font-sans text-[#F8FAFC] transition-colors disabled:opacity-40 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs sm:text-sm font-medium text-[#F8FAFC] transition-colors disabled:opacity-40 shadow-sm"
           >
-            <Download className="w-3 h-3 text-[#94A3B8]" />
+            <Download className="w-4 h-4 text-[#94A3B8]" />
             <span>{isExportingPDF ? 'Generating...' : 'Export as PDF'}</span>
           </button>
 
@@ -131,9 +131,9 @@ export const ExportBar: React.FC<ExportBarProps> = ({
           <button
             onClick={handleDOCX}
             disabled={isExportingDOCX || isGenerating || itemCount === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs font-sans text-[#F8FAFC] transition-colors disabled:opacity-40 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs sm:text-sm font-medium text-[#F8FAFC] transition-colors disabled:opacity-40 shadow-sm"
           >
-            <FileText className="w-3 h-3 text-[#94A3B8]" />
+            <FileText className="w-4 h-4 text-[#94A3B8]" />
             <span>{isExportingDOCX ? 'Generating...' : 'Export as DOCX'}</span>
           </button>
 
@@ -142,9 +142,9 @@ export const ExportBar: React.FC<ExportBarProps> = ({
             onClick={handleJSON}
             disabled={isExportingJSON || isGenerating || itemCount === 0}
             title="Export full JSON Telemetry Manifest for SOC2 / audit compliance"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs font-mono text-[#94A3B8] hover:text-[#F8FAFC] transition-colors disabled:opacity-40 shadow-sm"
+            className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs sm:text-sm font-mono text-[#94A3B8] hover:text-[#F8FAFC] transition-colors disabled:opacity-40 shadow-sm"
           >
-            <FileCode className="w-3 h-3" />
+            <FileCode className="w-4 h-4" />
             <span>{isExportingJSON ? 'JSON...' : 'JSON Audit'}</span>
           </button>
         </div>

@@ -30,26 +30,26 @@ export const LiveGenerationState: React.FC<LiveGenerationStateProps> = ({
   const stages = Array.from(stagesMap.values());
 
   return (
-    <div className="bg-[#12171F] border border-[#1E2633] rounded-lg p-4 mb-5 shadow-console">
+    <div className="bg-[#12171F] border border-[#1E2633] rounded-xl p-5 sm:p-6 mb-6 shadow-console">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-[#1E2633] gap-2">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
-          <h3 className="text-xs font-semibold text-[#F8FAFC] uppercase tracking-wide">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 mb-4 border-b border-[#1E2633] gap-2.5">
+        <div className="flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" />
+          <h3 className="text-xs sm:text-sm font-bold text-[#F8FAFC] uppercase tracking-wide">
             Telemetry Compilation & Trace
           </h3>
         </div>
         {stats && (
-          <div className="flex flex-wrap items-center gap-2.5 font-mono text-[11px] text-[#94A3B8]">
-            <span>Raw Ingested: <strong className="text-[#F8FAFC]">{stats.total_raw_events}</strong></span>
+          <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-[#94A3B8]">
+            <span>Raw Ingested: <strong className="text-[#F8FAFC] font-semibold">{stats.total_raw_events}</strong></span>
             <span className="text-[#283446]">/</span>
-            <span>In-Window: <strong className="text-[#3B82F6]">{stats.events_in_window}</strong></span>
+            <span>In-Window: <strong className="text-[#3B82F6] font-semibold">{stats.events_in_window}</strong></span>
             <span className="text-[#283446]">/</span>
-            <span>Collapsed: <strong className="text-emerald-400">{stats.deduplicated_items}</strong></span>
+            <span>Collapsed: <strong className="text-emerald-400 font-semibold">{stats.deduplicated_items}</strong></span>
             {stats.carried_forward_items !== undefined && stats.carried_forward_items > 0 && (
               <>
                 <span className="text-[#283446]">/</span>
-                <span>Held Over: <strong className="text-[#F59E0B]">{stats.carried_forward_items}</strong></span>
+                <span>Held Over: <strong className="text-[#F59E0B] font-semibold">{stats.carried_forward_items}</strong></span>
               </>
             )}
           </div>
@@ -65,33 +65,33 @@ export const LiveGenerationState: React.FC<LiveGenerationStateProps> = ({
           const isWarning = stage.status === 'warning';
 
           return (
-            <div key={idx} className="relative flex items-start gap-3.5 pb-3.5 last:pb-1">
+            <div key={idx} className="relative flex items-start gap-4 pb-4 last:pb-1">
               {/* Connecting vertical line */}
               {!isLast && (
                 <div
-                  className={`absolute left-[11px] top-[22px] bottom-0 w-[1px] ${
-                    isDone ? 'bg-emerald-500/30' : 'bg-[#283446]'
+                  className={`absolute left-[13px] top-[26px] bottom-0 w-[2px] ${
+                    isDone ? 'bg-emerald-500/40' : 'bg-[#283446]'
                   }`}
                 />
               )}
 
-              {/* Step indicator node */}
+              {/* Step indicator node (Larger) */}
               <div className="relative z-10 shrink-0 mt-0.5">
                 {isDone ? (
-                  <div className="w-[22px] h-[22px] rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-                    <Check className="w-3 h-3 stroke-[2.5]" />
+                  <div className="w-[26px] h-[26px] rounded-full bg-emerald-500/15 border border-emerald-500/50 flex items-center justify-center text-emerald-400">
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                   </div>
                 ) : isRunning ? (
-                  <div className="w-[22px] h-[22px] rounded-full bg-[#3B82F6]/10 border border-[#3B82F6]/40 flex items-center justify-center text-[#3B82F6]">
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                  <div className="w-[26px] h-[26px] rounded-full bg-[#3B82F6]/15 border border-[#3B82F6]/50 flex items-center justify-center text-[#3B82F6]">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   </div>
                 ) : isWarning ? (
-                  <div className="w-[22px] h-[22px] rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/40 flex items-center justify-center text-[#F59E0B]">
-                    <AlertCircle className="w-3 h-3" />
+                  <div className="w-[26px] h-[26px] rounded-full bg-[#F59E0B]/15 border border-[#F59E0B]/50 flex items-center justify-center text-[#F59E0B]">
+                    <AlertCircle className="w-3.5 h-3.5" />
                   </div>
                 ) : (
-                  <div className="w-[22px] h-[22px] rounded-full bg-[#0A0D12] border border-[#283446] flex items-center justify-center text-[#64748B]">
-                    <Circle className="w-2 h-2 fill-current" />
+                  <div className="w-[26px] h-[26px] rounded-full bg-[#0A0D12] border border-[#283446] flex items-center justify-center text-[#64748B]">
+                    <Circle className="w-2.5 h-2.5 fill-current" />
                   </div>
                 )}
               </div>
@@ -100,23 +100,23 @@ export const LiveGenerationState: React.FC<LiveGenerationStateProps> = ({
               <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex items-center justify-between gap-2">
                   <span
-                    className={`text-xs font-medium ${
+                    className={`text-xs sm:text-sm font-bold ${
                       isDone
                         ? 'text-[#F8FAFC]'
                         : isRunning
-                        ? 'text-[#3B82F6] font-semibold'
+                        ? 'text-[#3B82F6]'
                         : isWarning
-                        ? 'text-[#F59E0B] font-semibold'
+                        ? 'text-[#F59E0B]'
                         : 'text-[#94A3B8]'
                     }`}
                   >
                     {stage.stage}
                   </span>
-                  <span className="text-[10px] font-mono text-[#64748B] shrink-0">
+                  <span className="text-xs font-mono text-[#64748B] shrink-0">
                     {new Date(stage.timestamp).toLocaleTimeString()}
                   </span>
                 </div>
-                <p className="text-xs text-[#94A3B8] mt-0.5 font-mono leading-relaxed break-words">
+                <p className="text-xs sm:text-sm text-[#94A3B8] mt-1 font-mono leading-relaxed break-words">
                   {stage.message}
                 </p>
               </div>
