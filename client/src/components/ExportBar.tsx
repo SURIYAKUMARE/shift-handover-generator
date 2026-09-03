@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Download, FileText, RefreshCw, Check, Copy, ShieldCheck } from 'lucide-react';
+import { Download, FileText, RefreshCw, Check, Copy, ShieldCheck, FileCode } from 'lucide-react';
 
 interface ExportBarProps {
   onExportPDF: () => Promise<void>;
   onExportDOCX: () => Promise<void>;
+  onExportJSON: () => Promise<void>;
   onRegenerate: () => void;
   reproducibilityHash: string;
   previousHash?: string;
@@ -15,6 +16,7 @@ interface ExportBarProps {
 export const ExportBar: React.FC<ExportBarProps> = ({
   onExportPDF,
   onExportDOCX,
+  onExportJSON,
   onRegenerate,
   reproducibilityHash,
   previousHash,
@@ -24,6 +26,7 @@ export const ExportBar: React.FC<ExportBarProps> = ({
 }) => {
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingDOCX, setIsExportingDOCX] = useState(false);
+  const [isExportingJSON, setIsExportingJSON] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
 
   const handlePDF = async () => {
@@ -41,6 +44,15 @@ export const ExportBar: React.FC<ExportBarProps> = ({
       await onExportDOCX();
     } finally {
       setIsExportingDOCX(false);
+    }
+  };
+
+  const handleJSON = async () => {
+    try {
+      setIsExportingJSON(true);
+      await onExportJSON();
+    } finally {
+      setIsExportingJSON(false);
     }
   };
 
@@ -123,6 +135,17 @@ export const ExportBar: React.FC<ExportBarProps> = ({
           >
             <FileText className="w-3 h-3 text-[#8B949E]" />
             <span>{isExportingDOCX ? 'Generating...' : 'Export as DOCX'}</span>
+          </button>
+
+          {/* JSON Compliance Manifest */}
+          <button
+            onClick={handleJSON}
+            disabled={isExportingJSON || isGenerating || itemCount === 0}
+            title="Export full JSON Telemetry Manifest for audit compliance"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-xs font-mono text-[#8B949E] hover:text-[#F0F6FC] transition-colors disabled:opacity-40"
+          >
+            <FileCode className="w-3 h-3" />
+            <span>{isExportingJSON ? 'JSON...' : 'JSON Audit'}</span>
           </button>
         </div>
       </div>

@@ -1,13 +1,13 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { ShiftWindow, GeneratedNoteItem } from './types/index.js';
+import { ShiftWindow, GeneratedNoteItem, Event } from './types/index.js';
 import {
   MockTicketingAdapter,
   MockIncidentAdapter,
   MockChatAdapter,
 } from './pipeline/fetcher/adapters.js';
-import { fetchActivity } from './pipeline/fetcher/fetchActivity.js';
+import { fetchActivity, parseAndNormalizeTimestamp } from './pipeline/fetcher/fetchActivity.js';
 import { generateHandoverNote } from './pipeline/generator/handoverGenerator.js';
 import { generatePDFBuffer } from './pipeline/publisher/pdfPublisher.js';
 import { generateDOCXBuffer } from './pipeline/publisher/docxPublisher.js';
@@ -76,6 +76,7 @@ app.post('/api/shift/generate', async (req: Request, res: Response) => {
       shiftWindow,
       enabledSources = ['ticketing', 'incident', 'chat'],
       simulateUnreachableSource,
+      customEvents = [],
     } = req.body;
 
     if (!shiftWindow || !shiftWindow.start || !shiftWindow.end) {
@@ -97,10 +98,35 @@ app.post('/api/shift/generate', async (req: Request, res: Response) => {
       .map((id: string) => ADAPTERS_MAP[id as keyof typeof ADAPTERS_MAP])
       .filter(Boolean);
 
-    // 1. Fetch activity
+    // 1. Fetch activity from connected adapters
     const fetchResult = await fetchActivity(activeAdapters, shiftWindow);
 
-    // 2. Generate Handover Note (Dedup, section rules, deterministic sort, SHA-256)
+    // 2. Merge any user-injected custom events if present
+    if (Array.isArray(customEvents) && customEvents.length > 0) {
+      const startMs = new Date(shiftWindow.start).getTime();
+      const endMs = new Date(shiftWindow.end).getTime();
+
+      for (const cev of customEvents) {
+        fetchResult.totalRawEvents++;
+        const norm = parseAndNormalizeTimestamp(cev.timestamp);
+        if (norm) {
+          const tMs = norm.date.getTime();
+          if (tMs >= startMs && tMs < endMs) {
+            fetchResult.inWindowEvents.push({
+              ...cev,
+              timestamp: norm.isoUtc,
+            });
+          }
+        } else {
+          fetchResult.flaggedEvents.push({
+            event: cev,
+            reason: `Custom event has malformed timestamp: "${cev.timestamp}"`,
+          });
+        }
+      }
+    }
+
+    // 3. Generate Handover Note (Dedup, section rules, deterministic sort, SHA-256)
     const result = generateHandoverNote(
       fetchResult.inWindowEvents,
       shiftWindow,
@@ -174,6 +200,29 @@ app.post('/api/shift/export/docx', async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('DOCX Export failure:', err);
     res.status(500).json({ error: `Failed to export DOCX: ${err.message}` });
+  }
+});
+
+// JSON Compliance Audit Bundle Export
+app.post('/api/shift/export/json', async (req: Request, res: Response) => {
+  try {
+    const { shiftWindow, items, reproducibilityHash, operator, stats } = req.body;
+    const bundle = {
+      title: 'Shift Handover Telemetry Compliance Manifest',
+      exported_at: new Date().toISOString(),
+      operator: operator || 'Lead On-Call SRE',
+      reproducibility_hash: reproducibilityHash,
+      shift_window: shiftWindow,
+      statistics: stats,
+      ledger_items: items,
+    };
+    const payload = JSON.stringify(bundle, null, 2);
+    const filename = `shift-compliance-manifest-${new Date().toISOString().slice(0, 10)}.json`;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(payload);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 });
 

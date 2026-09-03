@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, FileText, RefreshCw, Check, Copy, Sun, Moon } from 'lucide-react';
+import { Download, FileText, RefreshCw, Check, Copy, Sun, Moon, Plus, Keyboard } from 'lucide-react';
 import { ShiftWindow } from '../types';
 
 interface HeaderProps {
@@ -8,6 +8,8 @@ interface HeaderProps {
   onGenerate: () => void;
   onExportPDF: () => Promise<void>;
   onExportDOCX: () => Promise<void>;
+  onOpenCustomEvent: () => void;
+  onOpenCommandPalette: () => void;
   reproducibilityHash?: string;
   previousHash?: string;
   darkMode: boolean;
@@ -21,6 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   onGenerate,
   onExportPDF,
   onExportDOCX,
+  onOpenCustomEvent,
+  onOpenCommandPalette,
   reproducibilityHash,
   previousHash,
   darkMode,
@@ -113,27 +117,46 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Operational Actions */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Inject Event */}
+          <button
+            onClick={onOpenCustomEvent}
+            title="Inject custom telemetry event into active shift"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-xs font-medium text-[#F0F6FC] transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5 text-[#58A6FF]" />
+            <span>Inject Event</span>
+          </button>
+
+          {/* Keyboard shortcuts */}
+          <button
+            onClick={onOpenCommandPalette}
+            title="Operational keyboard shortcuts (?)"
+            className="p-1.5 rounded-md bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC] transition-colors"
+          >
+            <Keyboard className="w-3.5 h-3.5" />
+          </button>
+
           {/* Export PDF */}
           <button
             onClick={handlePDF}
             disabled={isExportingPDF || isGenerating || itemCount === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-xs font-medium text-[#F0F6FC] transition-colors disabled:opacity-40"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-xs font-medium text-[#F0F6FC] transition-colors disabled:opacity-40"
           >
             <Download className="w-3.5 h-3.5 text-[#8B949E]" />
-            <span>{isExportingPDF ? 'Generating PDF...' : 'Export PDF'}</span>
+            <span>{isExportingPDF ? 'PDF...' : 'PDF'}</span>
           </button>
 
           {/* Export DOCX */}
           <button
             onClick={handleDOCX}
             disabled={isExportingDOCX || isGenerating || itemCount === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-xs font-medium text-[#F0F6FC] transition-colors disabled:opacity-40"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-xs font-medium text-[#F0F6FC] transition-colors disabled:opacity-40"
           >
             <FileText className="w-3.5 h-3.5 text-[#8B949E]" />
-            <span>{isExportingDOCX ? 'Generating DOCX...' : 'Export DOCX'}</span>
+            <span>{isExportingDOCX ? 'DOCX...' : 'DOCX'}</span>
           </button>
 
-          {/* Day / Night Shift Contrast Toggle */}
+          {/* Theme Switcher */}
           <button
             onClick={() => setDarkMode(!darkMode)}
             title={darkMode ? "Switch to Day Mode" : "Switch to Night Mode"}
@@ -142,14 +165,14 @@ export const Header: React.FC<HeaderProps> = ({
             {darkMode ? <Sun className="w-3.5 h-3.5 text-[#D29922]" /> : <Moon className="w-3.5 h-3.5 text-[#58A6FF]" />}
           </button>
 
-          {/* Primary Action: Generate Handover Note */}
+          {/* Primary Action */}
           <button
             onClick={onGenerate}
             disabled={isGenerating}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-[#238636] hover:bg-[#2EA043] border border-[rgba(240,246,252,0.1)] shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-white bg-[#238636] hover:bg-[#2EA043] border border-[rgba(240,246,252,0.1)] shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
           >
             {isGenerating && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-            <span>{isGenerating ? 'Compiling handover note...' : 'Generate handover note'}</span>
+            <span>{isGenerating ? 'Compiling...' : 'Generate handover note'}</span>
           </button>
         </div>
       </div>

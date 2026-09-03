@@ -2,12 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { ScenarioBar } from './components/ScenarioBar';
 import { ShiftSetup } from './components/ShiftSetup';
+import { ActivityHistogram } from './components/ActivityHistogram';
 import { LiveGenerationState } from './components/LiveGenerationState';
 import { NoteReviewScreen } from './components/NoteReviewScreen';
 import { SourceDrillDownDrawer } from './components/SourceDrillDownDrawer';
 import { ExportBar } from './components/ExportBar';
 import { AuditBanner } from './components/AuditBanner';
 import { SignOffModal } from './components/SignOffModal';
+import { CustomEventModal } from './components/CustomEventModal';
+import { CommandPaletteModal } from './components/CommandPaletteModal';
 import {
   ShiftWindow,
   PresetScenario,
@@ -15,6 +18,7 @@ import {
   GenerationResult,
   GeneratedNoteItem,
   GenerationStageLog,
+  Event as TelemetryEvent,
 } from './types';
 import {
   fetchPresets,
@@ -22,6 +26,7 @@ import {
   generateHandover,
   downloadPDFExport,
   downloadDOCXExport,
+  downloadJSONComplianceManifest,
 } from './api';
 
 export const App: React.FC = () => {
@@ -48,12 +53,18 @@ export const App: React.FC = () => {
   const [sourcesHealth, setSourcesHealth] = useState<Record<string, SourceHealth>>({});
   const [simulateUnreachable, setSimulateUnreachable] = useState<string>('');
 
+  // User-injected custom events
+  const [customEvents, setCustomEvents] = useState<TelemetryEvent[]>([]);
+
   // Generation state
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [generationResult, setGenerationResult] = useState<GenerationResult | null>(null);
   const [previousHash, setPreviousHash] = useState<string | undefined>(undefined);
   const [stageLogs, setStageLogs] = useState<GenerationStageLog[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Selected hour filter from ActivityHistogram
+  const [selectedHour, setSelectedHour] = useState<string | null>(null);
 
   // Drilldown Drawer State
   const [selectedItem, setSelectedItem] = useState<GeneratedNoteItem | null>(null);
@@ -66,6 +77,10 @@ export const App: React.FC = () => {
     timestamp: string;
     notes: string;
   } | undefined>(undefined);
+
+  // Custom Event Modal & Command Palette Modal
+  const [isCustomEventOpen, setIsCustomEventOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   const outgoingOperator = 'Suriya K. (Lead SRE)';
 
@@ -113,7 +128,12 @@ export const App: React.FC = () => {
 
   // Generation Handler
   const handleGenerate = useCallback(
-    async (scenarioToUse?: string, windowToUse?: ShiftWindow, unreachableOverride?: string) => {
+    async (
+      scenarioToUse?: string,
+      windowToUse?: ShiftWindow,
+      unreachableOverride?: string,
+      extraEvents?: TelemetryEvent[]
+    ) => {
       setIsGenerating(true);
       setErrorMsg(null);
 
@@ -126,6 +146,7 @@ export const App: React.FC = () => {
       const activeWindow = windowToUse || shiftWindow;
       const activeUnreachable =
         unreachableOverride !== undefined ? unreachableOverride : simulateUnreachable;
+      const activeCustomEvents = extraEvents !== undefined ? extraEvents : customEvents;
 
       setStageLogs([
         {
@@ -143,6 +164,7 @@ export const App: React.FC = () => {
           shiftWindow: activeWindow,
           enabledSources,
           simulateUnreachableSource: activeUnreachable || undefined,
+          customEvents: activeCustomEvents,
         });
 
         setGenerationResult(result);
@@ -164,7 +186,7 @@ export const App: React.FC = () => {
         setIsGenerating(false);
       }
     },
-    [selectedScenario, shiftWindow, enabledSources, simulateUnreachable, generationResult]
+    [selectedScenario, shiftWindow, enabledSources, simulateUnreachable, customEvents, generationResult]
   );
 
   // Initial auto-compilation on first load once presets ready
@@ -188,6 +210,13 @@ export const App: React.FC = () => {
     }
   };
 
+  // Add custom injected event
+  const handleAddCustomEvent = (newEvent: TelemetryEvent) => {
+    const updated = [...customEvents, newEvent];
+    setCustomEvents(updated);
+    handleGenerate(undefined, undefined, undefined, updated);
+  };
+
   // Single-File Export Handlers
   const handleExportPDF = async () => {
     if (!generationResult) return;
@@ -209,6 +238,17 @@ export const App: React.FC = () => {
     });
   };
 
+  const handleExportJSON = async () => {
+    if (!generationResult) return;
+    await downloadJSONComplianceManifest({
+      shiftWindow: generationResult.shift_window,
+      items: generationResult.items,
+      reproducibilityHash: generationResult.reproducibility_hash,
+      operator: outgoingOperator,
+      stats: generationResult.stats,
+    });
+  };
+
   const handleConfirmSignOff = (incomingEngineer: string, notes: string) => {
     setSignedOffData({
       incomingEngineer,
@@ -217,6 +257,45 @@ export const App: React.FC = () => {
       notes,
     });
   };
+
+  // Keyboard Shortcuts Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore when typing inside inputs or textareas
+      const target = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+
+      if (e.key === '?') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      } else if (e.key.toLowerCase() === 'g' || (e.ctrlKey && e.key === 'Enter')) {
+        e.preventDefault();
+        handleGenerate();
+      } else if (e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        handleExportPDF();
+      } else if (e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+        handleExportDOCX();
+      } else if (e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        setIsCustomEventOpen(true);
+      } else if (e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        setIsSignOffModalOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleGenerate]);
+
+  // Hourly Filtered Items
+  const displayedItems = React.useMemo(() => {
+    if (!generationResult) return [];
+    if (!selectedHour) return generationResult.items;
+    return generationResult.items.filter((item) => item.timestamp.slice(11, 13) === selectedHour);
+  }, [generationResult, selectedHour]);
 
   return (
     <div className="min-h-screen bg-[#0D1117] text-[#F0F6FC] flex flex-col font-sans">
@@ -227,6 +306,8 @@ export const App: React.FC = () => {
         onGenerate={() => handleGenerate()}
         onExportPDF={handleExportPDF}
         onExportDOCX={handleExportDOCX}
+        onOpenCustomEvent={() => setIsCustomEventOpen(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         reproducibilityHash={generationResult?.reproducibility_hash}
         previousHash={previousHash}
         darkMode={darkMode}
@@ -256,6 +337,16 @@ export const App: React.FC = () => {
           onRefreshHealth={handleRefreshHealth}
         />
 
+        {/* Visual Hourly Activity Histogram */}
+        {generationResult && generationResult.items.length > 0 && (
+          <ActivityHistogram
+            items={generationResult.items}
+            shiftWindow={generationResult.shift_window}
+            selectedHour={selectedHour}
+            onSelectHour={setSelectedHour}
+          />
+        )}
+
         {/* Vertical Compilation Stepper Trace */}
         <LiveGenerationState
           stageLogs={stageLogs}
@@ -282,7 +373,7 @@ export const App: React.FC = () => {
         {/* Operational Note Review Ledger */}
         {generationResult && (
           <NoteReviewScreen
-            items={generationResult.items}
+            items={displayedItems}
             shiftWindow={generationResult.shift_window}
             onSelectSource={(item) => setSelectedItem(item)}
             reproducibilityHash={generationResult.reproducibility_hash}
@@ -314,11 +405,26 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* Custom Telemetry Event Injector Modal */}
+      <CustomEventModal
+        isOpen={isCustomEventOpen}
+        onClose={() => setIsCustomEventOpen(false)}
+        shiftWindow={shiftWindow}
+        onAddEvent={handleAddCustomEvent}
+      />
+
+      {/* Keyboard Shortcuts Command Palette */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
+
       {/* Sticky Handoff Bar */}
       {generationResult && (
         <ExportBar
           onExportPDF={handleExportPDF}
           onExportDOCX={handleExportDOCX}
+          onExportJSON={handleExportJSON}
           onRegenerate={() => handleGenerate()}
           reproducibilityHash={generationResult.reproducibility_hash}
           previousHash={previousHash}

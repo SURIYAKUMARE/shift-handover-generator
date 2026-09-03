@@ -1,4 +1,4 @@
-import { GenerationResult, PresetScenario, SourceHealth, ShiftWindow, GeneratedNoteItem } from './types';
+import { GenerationResult, PresetScenario, SourceHealth, ShiftWindow, GeneratedNoteItem, Event } from './types';
 
 const API_BASE = '/api';
 
@@ -21,6 +21,7 @@ export async function generateHandover(payload: {
   shiftWindow: ShiftWindow;
   enabledSources: string[];
   simulateUnreachableSource?: string;
+  customEvents?: Event[];
 }): Promise<GenerationResult> {
   const res = await fetch(`${API_BASE}/shift/generate`, {
     method: 'POST',
@@ -80,6 +81,33 @@ export async function downloadDOCXExport(payload: {
   const a = document.createElement('a');
   a.href = url;
   a.download = `shift-handover-${new Date().toISOString().slice(0, 10)}.docx`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+export async function downloadJSONComplianceManifest(payload: {
+  shiftWindow: ShiftWindow;
+  items: GeneratedNoteItem[];
+  reproducibilityHash: string;
+  operator?: string;
+  stats?: any;
+}): Promise<void> {
+  const res = await fetch(`${API_BASE}/shift/export/json`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to download JSON compliance manifest');
+  }
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `shift-compliance-manifest-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
