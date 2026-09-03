@@ -315,7 +315,7 @@ export const App: React.FC = () => {
   }, [generationResult, selectedHour]);
 
   return (
-    <div className="min-h-screen bg-[#0D1117] text-[#F0F6FC] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#0A0D12] text-[#F8FAFC] flex flex-col font-sans">
       {/* Shift Watch Log Header (Relay baton framing) */}
       <Header
         shiftWindow={shiftWindow}
@@ -383,8 +383,8 @@ export const App: React.FC = () => {
 
         {/* Critical Failure Notice */}
         {errorMsg && (
-          <div className="p-3.5 mb-5 rounded bg-[#161B22] border border-[#D29922]/50 text-[#F0F6FC] text-xs font-mono">
-            <strong className="text-[#D29922]">Ingestion Failure:</strong> {errorMsg}
+          <div className="p-3.5 mb-5 rounded-lg bg-[#12171F] border border-[#EF4444]/50 text-[#F8FAFC] text-xs font-mono shadow-console">
+            <strong className="text-[#EF4444]">Ingestion Failure:</strong> {errorMsg}
           </div>
         )}
 

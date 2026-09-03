@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { GeneratedNoteItem, SectionType, ShiftWindow } from '../types';
-import { ShieldCheck, ArrowRight, Minus, Search, LayoutGrid, List, Check, Copy, CheckCircle2, UserCheck } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Minus, Search, LayoutGrid, List, Check, Copy, CheckCircle2, UserCheck, AlertOctagon } from 'lucide-react';
 
 interface NoteReviewScreenProps {
   items: GeneratedNoteItem[];
@@ -23,26 +23,26 @@ const SECTION_CATEGORIES: Record<SectionType, SectionCategory> = {
   'Blockers': {
     title: 'Blockers & Escalations',
     incomingInstruction: 'Requires immediate intervention or on-call contact by incoming shift',
-    dotColor: 'bg-[#D29922]',
-    borderColor: 'border-[#D29922]/30',
+    dotColor: 'bg-[#F59E0B]',
+    borderColor: 'border-[#F59E0B]/30',
   },
   'In Progress': {
     title: 'In Progress',
     incomingInstruction: 'Active investigations and changes currently underway',
-    dotColor: 'bg-[#58A6FF]',
-    borderColor: 'border-[#58A6FF]/30',
+    dotColor: 'bg-[#3B82F6]',
+    borderColor: 'border-[#3B82F6]/30',
   },
   'Completed': {
     title: 'Completed',
     incomingInstruction: 'Closed or mitigated during this shift; no immediate action required',
-    dotColor: 'bg-[#3FB950]',
-    borderColor: 'border-[#3FB950]/30',
+    dotColor: 'bg-[#10B981]',
+    borderColor: 'border-[#10B981]/30',
   },
   'Watch-list': {
     title: 'Watch-list',
     incomingInstruction: 'Under soak-period observation or displaying intermittent fluctuation',
-    dotColor: 'bg-[#8B949E]',
-    borderColor: 'border-[#8B949E]/30',
+    dotColor: 'bg-[#94A3B8]',
+    borderColor: 'border-[#94A3B8]/30',
   },
 };
 
@@ -93,7 +93,8 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
         md += `• _Nothing to report (confirmed quiet within shift window)_\n`;
       } else {
         for (const itm of secItems) {
-          md += `• ${itm.item} \`[${itm.source} - ${itm.timestamp}]\`\n`;
+          const heldTag = itm.carried_forward ? ` [HELD OVER: ${itm.shifts_open} SHIFTS]` : '';
+          md += `• ${itm.item}${heldTag} \`[${itm.source} - ${itm.timestamp}]\`\n`;
         }
       }
       md += `\n`;
@@ -107,22 +108,22 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
   return (
     <div className="space-y-5 pb-20">
       {/* Ledger Manifest Header */}
-      <div className="bg-[#161B22] border border-[#30363D] rounded-md p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+      <div className="bg-[#12171F] border border-[#1E2633] rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-console">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#3FB950]" />
-            <span className="text-xs font-semibold text-[#F0F6FC]">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span className="text-xs font-semibold text-[#F8FAFC]">
               Verified Shift Handover Record
             </span>
             {isSignedOff && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#3FB950]/15 border border-[#3FB950]/30 text-[#3FB950] font-sans text-[11px] font-medium">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-sans text-[11px] font-medium">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Accepted by {signedOffBy}</span>
               </span>
             )}
           </div>
-          <p className="text-xs text-[#8B949E] mt-1 font-sans">
-            Window interval <span className="text-[#F0F6FC] font-mono">{shiftWindow.start}</span> through <span className="text-[#F0F6FC] font-mono">{shiftWindow.end}</span>. Sourced telemetry only.
+          <p className="text-xs text-[#94A3B8] mt-1 font-sans">
+            Window interval <span className="text-[#F8FAFC] font-mono">{shiftWindow.start}</span> through <span className="text-[#F8FAFC] font-mono">{shiftWindow.end}</span>. Sourced telemetry only.
           </p>
         </div>
 
@@ -130,19 +131,19 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={handleCopySlack}
-            title="Copy structured Markdown for Slack / Teams"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-xs font-sans text-[#F0F6FC] transition-colors"
+            title="Copy structured Markdown for Slack / Teams (Hotkey: M)"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-xs font-sans text-[#F8FAFC] transition-colors shadow-sm"
           >
-            {copiedSlack ? <Check className="w-3.5 h-3.5 text-[#3FB950]" /> : <Copy className="w-3.5 h-3.5 text-[#8B949E]" />}
+            {copiedSlack ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-[#94A3B8]" />}
             <span>{copiedSlack ? 'Copied for Slack' : 'Copy for Slack'}</span>
           </button>
 
           <button
             onClick={onOpenSignOff}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold text-white transition-colors ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold text-white transition-colors shadow-sm ${
               isSignedOff
-                ? 'bg-[#21262D] hover:bg-[#30363D] border border-[#30363D] text-[#3FB950]'
-                : 'bg-[#238636] hover:bg-[#2EA043] border border-[rgba(240,246,252,0.1)] shadow-sm'
+                ? 'bg-[#18202C] hover:bg-[#1D2635] border border-[#283446] text-emerald-400'
+                : 'bg-emerald-600 hover:bg-emerald-700 border border-[rgba(255,255,255,0.15)]'
             }`}
           >
             <UserCheck className="w-3.5 h-3.5" />
@@ -152,15 +153,15 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
       </div>
 
       {/* Operational Search, Category Filters, and Density Switcher */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#161B22] border border-[#30363D] rounded-md p-2.5">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#12171F] border border-[#1E2633] rounded-lg p-2.5 shadow-console">
         {/* Category Filter Pills */}
         <div className="flex flex-wrap items-center gap-1 text-xs">
           <button
             onClick={() => setActiveCategory('All')}
             className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
               activeCategory === 'All'
-                ? 'bg-[#21262D] text-[#F0F6FC] font-semibold border border-[#30363D]'
-                : 'text-[#8B949E] hover:text-[#F0F6FC]'
+                ? 'bg-[#18202C] text-[#F8FAFC] font-semibold border border-[#3B82F6]'
+                : 'text-[#94A3B8] hover:text-[#F8FAFC]'
             }`}
           >
             All Items ({items.length})
@@ -177,8 +178,8 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                 onClick={() => setActiveCategory(sec)}
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
                   isSelected
-                    ? 'bg-[#21262D] text-[#F0F6FC] font-semibold border border-[#30363D]'
-                    : 'text-[#8B949E] hover:text-[#F0F6FC]'
+                    ? 'bg-[#18202C] text-[#F8FAFC] font-semibold border border-[#3B82F6]'
+                    : 'text-[#94A3B8] hover:text-[#F8FAFC]'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${color}`} />
@@ -192,29 +193,29 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
         <div className="flex items-center gap-2">
           {/* Search */}
           <div className="relative flex-1 md:w-56">
-            <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#6E7681]" />
+            <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-[#64748B]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search records, tickets, terms..."
-              className="w-full bg-[#0D1117] border border-[#30363D] rounded pl-8 pr-2.5 py-1 text-xs text-[#F0F6FC] placeholder-[#6E7681] focus:outline-none focus:border-[#58A6FF]"
+              className="w-full bg-[#0A0D12] border border-[#283446] rounded-md pl-8 pr-2.5 py-1 text-xs text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#3B82F6]"
             />
           </div>
 
           {/* Density Switcher */}
-          <div className="flex items-center border border-[#30363D] rounded bg-[#0D1117] p-0.5">
+          <div className="flex items-center border border-[#283446] rounded bg-[#0A0D12] p-0.5">
             <button
               onClick={() => setViewMode('docket')}
               title="Expanded Evidence Docket View"
-              className={`p-1 rounded ${viewMode === 'docket' ? 'bg-[#21262D] text-[#F0F6FC]' : 'text-[#8B949E] hover:text-[#F0F6FC]'}`}
+              className={`p-1 rounded ${viewMode === 'docket' ? 'bg-[#18202C] text-[#F8FAFC]' : 'text-[#94A3B8] hover:text-[#F8FAFC]'}`}
             >
               <List className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewMode('compact')}
               title="Compact Operational Table View"
-              className={`p-1 rounded ${viewMode === 'compact' ? 'bg-[#21262D] text-[#F0F6FC]' : 'text-[#8B949E] hover:text-[#F0F6FC]'}`}
+              className={`p-1 rounded ${viewMode === 'compact' ? 'bg-[#18202C] text-[#F8FAFC]' : 'text-[#94A3B8] hover:text-[#F8FAFC]'}`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
@@ -233,21 +234,21 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
             return (
               <div
                 key={sectionKey}
-                className={`bg-[#161B22] border ${cat.borderColor} rounded-md overflow-hidden shadow-sm`}
+                className={`bg-[#12171F] border ${cat.borderColor} rounded-lg overflow-hidden shadow-console`}
               >
                 {/* Section Watch Bar */}
-                <div className="px-4 py-2.5 bg-[#0D1117] border-b border-[#30363D] flex items-center justify-between">
+                <div className="px-4 py-2.5 bg-[#0A0D12] border-b border-[#1E2633] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <span className={`w-2 h-2 rounded-full ${cat.dotColor}`} />
-                    <h3 className="text-xs font-semibold text-[#F0F6FC] uppercase tracking-wide">
+                    <h3 className="text-xs font-semibold text-[#F8FAFC] uppercase tracking-wide">
                       {cat.title}
                     </h3>
-                    <span className="text-[11px] font-mono text-[#8B949E] px-1.5 py-0.2 rounded bg-[#161B22] border border-[#30363D]">
+                    <span className="text-[11px] font-mono text-[#94A3B8] px-1.5 py-0.2 rounded bg-[#18202C] border border-[#283446]">
                       {sectionItems.length}
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-[#8B949E] font-sans hidden sm:inline">
+                  <div className="text-[11px] text-[#94A3B8] font-sans hidden sm:inline">
                     {cat.incomingInstruction}
                   </div>
                 </div>
@@ -255,13 +256,13 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                 {/* Section Ledger Items */}
                 <div className="p-3.5 space-y-2.5">
                   {sectionItems.length === 0 ? (
-                    <div className="p-3 rounded bg-[#0D1117] border border-dashed border-[#30363D] text-[#8B949E] flex items-center gap-3">
-                      <Minus className="w-4 h-4 text-[#6E7681] shrink-0" />
+                    <div className="p-3 rounded-md bg-[#0A0D12] border border-dashed border-[#283446] text-[#94A3B8] flex items-center gap-3">
+                      <Minus className="w-4 h-4 text-[#64748B] shrink-0" />
                       <div>
-                        <span className="text-xs font-medium text-[#C9D1D9] block">
+                        <span className="text-xs font-medium text-[#F8FAFC] block">
                           Nothing to report
                         </span>
-                        <span className="text-[11px] text-[#8B949E]">
+                        <span className="text-[11px] text-[#94A3B8]">
                           Confirmed quiet: zero telemetry events matched this section within the operating window.
                         </span>
                       </div>
@@ -270,16 +271,16 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                     sectionItems.map((item, idx) => (
                       <div
                         key={idx}
-                        className={`bg-[#0D1117] border rounded p-3 transition-colors ${
+                        className={`bg-[#0A0D12] border rounded-md p-3 transition-colors ${
                           item.carried_forward && (item.shifts_open || 1) >= 3
-                            ? 'border-[#D29922] bg-[#D29922]/5 shadow-sm'
+                            ? 'border-[#F59E0B] bg-[#F59E0B]/5 shadow-sm'
                             : item.carried_forward
-                            ? 'border-[#30363D] border-l-2 border-l-[#58A6FF]/60 hover:border-[#8B949E]/40'
-                            : 'border-[#30363D] hover:border-[#8B949E]/40'
+                            ? 'border-[#1E2633] border-l-2 border-l-[#3B82F6] hover:border-[#3B82F6]/60'
+                            : 'border-[#1E2633] hover:border-[#283446]'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-xs sm:text-[13px] text-[#F0F6FC] font-normal leading-relaxed flex-1">
+                          <p className="text-xs sm:text-[13px] text-[#F8FAFC] font-normal leading-relaxed flex-1">
                             {item.item}
                           </p>
 
@@ -287,12 +288,12 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                           {item.carried_forward && (
                             <div className="shrink-0">
                               {(item.shifts_open || 1) >= 3 ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#D29922]/20 border border-[#D29922] text-[#D29922]">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-[#D29922] animate-pulse" />
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#F59E0B]/20 border border-[#F59E0B] text-[#F59E0B]">
+                                  <AlertOctagon className="w-3 h-3" />
                                   STALE ({item.shifts_open} SHIFTS OPEN)
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono text-[#8B949E] bg-[#161B22] border border-[#30363D]">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono text-[#94A3B8] bg-[#12171F] border border-[#283446]">
                                   carried over · {item.shifts_open || 1} shifts
                                 </span>
                               )}
@@ -301,35 +302,35 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                         </div>
 
                         {item.source_unavailable && (
-                          <div className="mt-1 text-[11px] font-mono text-[#D29922] bg-[#D29922]/10 px-2 py-0.5 rounded border border-[#D29922]/30">
+                          <div className="mt-1 text-[11px] font-mono text-[#F59E0B] bg-[#F59E0B]/10 px-2 py-0.5 rounded border border-[#F59E0B]/30">
                             Warning: Source record no longer available in upstream system
                           </div>
                         )}
 
-                        <div className="mt-2.5 pt-2 border-t border-[#21262D] flex flex-wrap items-center justify-between gap-2">
+                        <div className="mt-2.5 pt-2 border-t border-[#18202C] flex flex-wrap items-center justify-between gap-2">
                           <div className="flex flex-wrap items-center gap-2.5">
-                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#161B22] border border-[#30363D] font-mono text-[11px] text-[#C9D1D9]">
-                              <span className="text-[#8B949E]">Record:</span>
-                              <span className="text-[#58A6FF] font-semibold">{item.source}</span>
+                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#12171F] border border-[#283446] font-mono text-[11px] text-[#F8FAFC]">
+                              <span className="text-[#94A3B8]">Record:</span>
+                              <span className="text-[#3B82F6] font-semibold">{item.source}</span>
                             </div>
 
-                            <div className="text-[11px] font-mono text-[#8B949E]">
+                            <div className="text-[11px] font-mono text-[#94A3B8]">
                               <span>Logged: {item.timestamp}</span>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-3">
                             {item.progression && item.progression.length > 1 && (
-                              <div className="text-[11px] font-mono text-[#8B949E]">
+                              <div className="text-[11px] font-mono text-[#94A3B8]">
                                 <span>State path: </span>
-                                <span className="text-[#C9D1D9]">{item.progression.join(' → ')}</span>
+                                <span className="text-[#F8FAFC]">{item.progression.join(' → ')}</span>
                               </div>
                             )}
 
                             <button
                               type="button"
                               onClick={() => onSelectSource(item)}
-                              className="inline-flex items-center gap-1 text-[11px] font-sans font-medium text-[#58A6FF] hover:text-[#79C0FF] hover:underline"
+                              className="inline-flex items-center gap-1 text-[11px] font-sans font-medium text-[#3B82F6] hover:text-blue-400 hover:underline"
                             >
                               <span>Inspect evidence</span>
                               <ArrowRight className="w-3 h-3" />
@@ -346,10 +347,10 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
         </div>
       ) : (
         /* High-Density Compact Ops Table View */
-        <div className="bg-[#161B22] border border-[#30363D] rounded-md overflow-x-auto shadow-sm">
+        <div className="bg-[#12171F] border border-[#1E2633] rounded-lg overflow-x-auto shadow-console">
           <table className="w-full text-left text-xs font-sans">
             <thead>
-              <tr className="border-b border-[#30363D] bg-[#0D1117] text-[#8B949E] text-[11px] font-mono uppercase tracking-wider">
+              <tr className="border-b border-[#1E2633] bg-[#0A0D12] text-[#94A3B8] text-[11px] font-mono uppercase tracking-wider">
                 <th className="py-2.5 px-3 w-36">Category</th>
                 <th className="py-2.5 px-3 w-40">Citation</th>
                 <th className="py-2.5 px-3">Item Summary</th>
@@ -357,19 +358,19 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                 <th className="py-2.5 px-3 w-28 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262D]">
+            <tbody className="divide-y divide-[#18202C]">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-6 text-center text-[#8B949E] font-sans text-xs">
+                  <td colSpan={5} className="py-6 text-center text-[#94A3B8] font-sans text-xs">
                     No items match the active filter or query.
                   </td>
                 </tr>
               ) : (
                 filteredItems.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-[#1C2128] transition-colors">
+                  <tr key={idx} className="hover:bg-[#18202C] transition-colors">
                     <td className="py-2.5 px-3 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#F0F6FC]">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#F8FAFC]">
                           <span className={`w-1.5 h-1.5 rounded-full ${SECTION_CATEGORIES[item.section].dotColor}`} />
                           <span>{item.section}</span>
                         </span>
@@ -377,8 +378,8 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                           <span
                             className={`text-[9px] font-mono px-1 py-0.2 rounded border ${
                               (item.shifts_open || 1) >= 3
-                                ? 'bg-[#D29922]/20 border-[#D29922] text-[#D29922] font-semibold'
-                                : 'bg-[#161B22] border-[#30363D] text-[#8B949E]'
+                                ? 'bg-[#F59E0B]/20 border-[#F59E0B] text-[#F59E0B] font-semibold'
+                                : 'bg-[#0A0D12] border-[#283446] text-[#94A3B8]'
                             }`}
                             title={`Carried over across ${item.shifts_open || 1} consecutive shifts`}
                           >
@@ -387,19 +388,19 @@ export const NoteReviewScreen: React.FC<NoteReviewScreenProps> = ({
                         )}
                       </div>
                     </td>
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-[#58A6FF] whitespace-nowrap">
+                    <td className="py-2.5 px-3 font-mono text-[11px] text-[#3B82F6] whitespace-nowrap">
                       {item.source}
                     </td>
-                    <td className="py-2.5 px-3 text-[#F0F6FC] font-normal leading-tight">
+                    <td className="py-2.5 px-3 text-[#F8FAFC] font-normal leading-tight">
                       {item.item}
                     </td>
-                    <td className="py-2.5 px-3 font-mono text-[11px] text-[#8B949E] whitespace-nowrap">
+                    <td className="py-2.5 px-3 font-mono text-[11px] text-[#94A3B8] whitespace-nowrap">
                       {item.timestamp}
                     </td>
                     <td className="py-2.5 px-3 text-right whitespace-nowrap">
                       <button
                         onClick={() => onSelectSource(item)}
-                        className="text-[11px] font-medium text-[#58A6FF] hover:underline"
+                        className="text-[11px] font-medium text-[#3B82F6] hover:underline"
                       >
                         Inspect
                       </button>

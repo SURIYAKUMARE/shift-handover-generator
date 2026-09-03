@@ -16,17 +16,17 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
   disabled,
 }) => {
   return (
-    <div className="bg-[#161B22] border border-[#30363D] rounded-md p-3 mb-5 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
-        <span className="text-xs font-semibold text-[#F0F6FC]">
+    <div className="bg-[#12171F] border border-[#1E2633] rounded-lg p-3 mb-5 shadow-console">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2.5">
+        <span className="text-xs font-semibold text-[#F8FAFC]">
           Shift Test Scenarios
         </span>
-        <span className="text-[11px] text-[#8B949E] font-sans">
-          Verify layout density, progression collapse, and hostile fault isolation
+        <span className="text-[11px] text-[#94A3B8] font-sans">
+          Verify high-density triage, multi-shift carry forward, and hostile fault isolation
         </span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-2">
         {presets.map((preset) => {
           const isSelected = selectedScenario === preset.id;
           return (
@@ -34,15 +34,15 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
               key={preset.id}
               onClick={() => onSelectScenario(preset.id)}
               disabled={disabled}
-              className={`px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                 isSelected
-                  ? 'bg-[#21262D] border-[#8B949E] text-[#F0F6FC] font-semibold'
-                  : 'bg-[#0D1117] border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC] hover:border-[#6E7681]'
+                  ? 'bg-[#18202C] border-[#3B82F6] text-[#F8FAFC] font-semibold shadow-sm'
+                  : 'bg-[#0A0D12] border-[#283446] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-[#3B82F6]/50'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span>{preset.name.split('(')[0].trim()}</span>
               {preset.id === 'hostile' && (
-                <span className="ml-1.5 text-[10px] px-1 py-0.2 rounded bg-[#D29922]/15 text-[#D29922] font-mono">
+                <span className="ml-1.5 text-[10px] px-1 py-0.2 rounded bg-[#F59E0B]/15 text-[#F59E0B] font-mono font-semibold">
                   FAULT
                 </span>
               )}
@@ -53,13 +53,13 @@ export const ScenarioBar: React.FC<ScenarioBarProps> = ({
         <button
           onClick={() => onSelectScenario('custom')}
           disabled={disabled}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium border transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
             selectedScenario === 'custom'
-              ? 'bg-[#21262D] border-[#8B949E] text-[#F0F6FC] font-semibold'
-              : 'bg-[#0D1117] border-[#30363D] text-[#8B949E] hover:text-[#F0F6FC] hover:border-[#6E7681]'
+              ? 'bg-[#18202C] border-[#3B82F6] text-[#F8FAFC] font-semibold shadow-sm'
+              : 'bg-[#0A0D12] border-[#283446] text-[#94A3B8] hover:text-[#F8FAFC] hover:border-[#3B82F6]/50'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <Sliders className="w-3 h-3 text-[#8B949E]" />
+          <Sliders className="w-3 h-3 text-[#94A3B8]" />
           <span>Custom Interval</span>
         </button>
       </div>

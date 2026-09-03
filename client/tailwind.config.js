@@ -8,38 +8,45 @@ export default {
   theme: {
     extend: {
       colors: {
-        console: {
-          base: '#0D1117',            // Deep maritime slate-black (low eye-strain)
-          surface: '#161B22',         // Matte console surface
-          surfaceRaised: '#21262D',   // Raised console tier
-          border: '#30363D',          // Crisp mechanical boundary
-          borderMuted: '#21262D',
-          hover: '#1C2128',
+        canvas: {
+          DEFAULT: '#0A0D12',        // Deep obsidian canvas with faint blue-gray undertone
+          card: '#12171F',           // Matte console card surface
+          elevated: '#18202C',       // Elevated console tier
+          hover: '#1D2635',          // Interactive hover surface
+        },
+        boundary: {
+          subtle: '#1E2633',         // Crisp 1px structural boundary
+          DEFAULT: '#283446',        // Active border
+          focus: '#3B82F6',          // Focus ring
         },
         ink: {
-          primary: '#F0F6FC',         // High contrast crisp text
-          secondary: '#8B949E',       // Secondary telemetry / metadata
-          muted: '#6E7681',           // Faint labels / boundaries
+          primary: '#F8FAFC',        // High-contrast, crisp text (WCAG AAA)
+          secondary: '#94A3B8',      // Secondary metadata & descriptions
+          muted: '#64748B',          // Muted labels, timestamps
         },
-        baton: {
-          amber: '#D29922',           // Blockers & Escalations
-          amberTint: 'rgba(210, 153, 34, 0.1)',
-          amberBorder: 'rgba(210, 153, 34, 0.25)',
+        ops: {
+          amber: '#F59E0B',          // Blockers & Escalations
+          amberSubtle: 'rgba(245, 158, 11, 0.08)',
+          amberBorder: 'rgba(245, 158, 11, 0.28)',
 
-          blue: '#58A6FF',            // In Progress
-          blueTint: 'rgba(88, 166, 255, 0.1)',
-          blueBorder: 'rgba(88, 166, 255, 0.25)',
+          blue: '#3B82F6',           // In Progress
+          blueSubtle: 'rgba(59, 130, 246, 0.08)',
+          blueBorder: 'rgba(59, 130, 246, 0.28)',
 
-          green: '#3FB950',           // Completed
-          greenTint: 'rgba(63, 185, 80, 0.1)',
-          greenBorder: 'rgba(63, 185, 80, 0.25)',
+          emerald: '#10B981',        // Completed
+          emeraldSubtle: 'rgba(16, 185, 129, 0.08)',
+          emeraldBorder: 'rgba(16, 185, 129, 0.28)',
 
-          slate: '#8B949E',           // Watch-list
-          slateTint: 'rgba(139, 148, 158, 0.1)',
-          slateBorder: 'rgba(139, 148, 158, 0.25)',
+          slate: '#94A3B8',          // Watch-list
+          slateSubtle: 'rgba(148, 163, 184, 0.08)',
+          slateBorder: 'rgba(148, 163, 184, 0.22)',
 
-          action: '#238636',          // Primary relay handover green
-          actionHover: '#2EA043',
+          crimson: '#EF4444',        // Stale unresolved escalation alert
+          crimsonSubtle: 'rgba(239, 68, 68, 0.12)',
+          crimsonBorder: 'rgba(239, 68, 68, 0.35)',
+
+          primary: '#2563EB',        // Confident primary action
+          primaryHover: '#1D4ED8',
         },
       },
       fontFamily: {
@@ -50,7 +57,11 @@ export default {
         DEFAULT: '6px',
         md: '6px',
         lg: '8px',
-        xl: '8px',
+        xl: '10px',
+      },
+      boxShadow: {
+        console: '0 1px 3px 0 rgba(0, 0, 0, 0.35), 0 1px 2px -1px rgba(0, 0, 0, 0.3)',
+        dock: '0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.4)',
       },
     },
   },

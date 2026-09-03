@@ -4,50 +4,50 @@
 
 @layer base {
   body {
-    @apply bg-[#0D1117] text-[#F0F6FC] antialiased selection:bg-blue-500/25 selection:text-white font-sans;
+    @apply bg-[#0A0D12] text-[#F8FAFC] antialiased selection:bg-blue-600/30 selection:text-white font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Functional low-friction scrollbar */
+  /* Ergonomic control-room scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0D1117;
+    background: #0A0D12;
   }
   ::-webkit-scrollbar-thumb {
-    background: #30363D;
+    background: #283446;
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #484F58;
+    background: #3B82F6;
   }
 }
 
-/* Light mode for dual-environment NOCs */
+/* Light mode fallback */
 .light body {
-  background-color: #F6F8FA !important;
-  color: #1F2328 !important;
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
 }
-.light .bg-\[\#0D1117\] {
-  background-color: #F6F8FA !important;
+.light .bg-\[\#0A0D12\] {
+  background-color: #F8FAFC !important;
 }
-.light .bg-console-base {
-  background-color: #F6F8FA !important;
-}
-.light .bg-console-surface {
+.light .bg-\[\#12171F\] {
   background-color: #FFFFFF !important;
 }
-.light .bg-console-surfaceRaised {
-  background-color: #F6F8FA !important;
+.light .bg-\[\#18202C\] {
+  background-color: #F1F5F9 !important;
 }
-.light .border-console-border {
-  border-color: #D0D7DE !important;
+.light .border-\[\#1E2633\] {
+  border-color: #E2E8F0 !important;
 }
-.light .text-ink-primary {
-  color: #1F2328 !important;
+.light .border-\[\#283446\] {
+  border-color: #CBD5E1 !important;
 }
-.light .text-ink-secondary {
-  color: #656D76 !important;
+.light .text-\[\#F8FAFC\] {
+  color: #0F172A !important;
+}
+.light .text-\[\#94A3B8\] {
+  color: #64748B !important;
 }
